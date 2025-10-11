@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Colunas SMTP por Usuário - Supabase</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .info-box p {
+            color: #1e40af;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .success-box {
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .success-box p {
+            color: #065f46;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+        .log div { margin-bottom: 4px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #3b82f6; }
+        .sql-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .sql-box pre {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #334155;
+            overflow-x: auto;
+        }
+        .copy-btn {
+            background: #10b981;
+            font-size: 14px;
+            padding: 8px 16px;
+            width: auto;
+            margin-top: 10px;
+        }
+        .columns-list {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .columns-list ul {
+            list-style: none;
+        }
+        .columns-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #475569;
+        }
+        .columns-list li:last-child {
+            border-bottom: none;
+        }
+        .badge {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+        .user-badge {
+            background: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👤 Configurar Email por Usuário</h1>
+        <p class="subtitle">Adicionar colunas SMTP na tabela user_profiles - cada usuário terá suas próprias configurações</p>
+
+        <div class="success-box">
+            <p><strong>✅ Novo Modelo:</strong> Agora cada usuário pode configurar seu próprio email SMTP individualmente! Suas configurações ficam salvas no seu perfil (user_profiles).</p>
+        </div>
+
+        <div class="info-box">
+            <p><strong>ℹ️ Informação:</strong> Este script irá adicionar as colunas necessárias para configuração de email SMTP na tabela user_profiles do Supabase, permitindo que cada usuário tenha suas próprias credenciais de email.</p>
+        </div>
+
+        <div class="columns-list">
+            <strong>Colunas que serão adicionadas em user_profiles:</strong>
+            <ul>
+                <li>smtp_host <span class="badge">TEXT</span> <span class="badge user-badge">POR USUÁRIO</span></li>
+                <li>email_porta <span class="badge">INTEGER</span> <span class="badge user-badge">POR USUÁRIO</span></li>
+                <li>email_usuario <span class="badge">TEXT</span> <span class="badge user-badge">POR USUÁRIO</span></li>
+                <li>smtp_pass <span class="badge">TEXT</span> <span class="badge user-badge">POR USUÁRIO</span></li>
+                <li>smtp_from_name <span class="badge">TEXT</span> <span class="badge user-badge">POR USUÁRIO</span></li>
+                <li>smtp_seguranca <span class="badge">TEXT</span> <span class="badge user-badge">POR USUÁRIO</span></li>
+                <li>signature_image <span class="badge">TEXT</span> <span class="badge user-badge">POR USUÁRIO</span></li>
+                <li>two_factor_enabled <span class="badge">BOOLEAN</span> <span class="badge user-badge">POR USUÁRIO</span></li>
+            </ul>
+        </div>
+
+        <button id="executeBtn" onclick="executeSQL()">
+            ▶️ Executar Alterações no Supabase
+        </button>
+
+        <div class="sql-box">
+            <strong>SQL que será executado:</strong>
+            <pre id="sqlCode">ALTER TABLE public.user_profiles
+ADD COLUMN IF NOT EXISTS smtp_host TEXT,
+ADD COLUMN IF NOT EXISTS email_porta INTEGER DEFAULT 587,
+ADD COLUMN IF NOT EXISTS email_usuario TEXT,
+ADD COLUMN IF NOT EXISTS smtp_pass TEXT,
+ADD COLUMN IF NOT EXISTS smtp_from_name TEXT,
+ADD COLUMN IF NOT EXISTS smtp_seguranca TEXT DEFAULT 'tls',
+ADD COLUMN IF NOT EXISTS signature_image TEXT,
+ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;</pre>
+            <button class="copy-btn" onclick="copySQL()">📋 Copiar SQL</button>
+        </div>
+
+        <div id="log" class="log" style="display: none;"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://nrbsocawokmihvxfcpso.supabase.co";
+        const SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnNvY2F3b2ttaWh2eGZjcHNvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjQ3NDA1MywiZXhwIjoyMDcyMDUwMDUzfQ.w6EJDzQj1fffHJ4lYzOVDLydqhbhGOW5KtGBDjaHfPA";
+
+        const logElement = document.getElementById('log');
+        const executeBtn = document.getElementById('executeBtn');
+
+        function log(message, type = 'info') {
+            logElement.style.display = 'block';
+            const div = document.createElement('div');
+            div.className = type;
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            div.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(div);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function copySQL() {
+            const sql = document.getElementById('sqlCode').textContent;
+            navigator.clipboard.writeText(sql).then(() => {
+                alert('✅ SQL copiado para a área de transferência!\n\nVocê pode colar no SQL Editor do Supabase.');
+            });
+        }
+
+        async function executeSQL() {
+            executeBtn.disabled = true;
+            logElement.innerHTML = '';
+            logElement.style.display = 'block';
+
+            log('🚀 Iniciando processo...', 'info');
+            log('🔌 Conectando ao Supabase...', 'info');
+
+            try {
+                const { createClient } = supabase;
+                const client = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+                log('✅ Conectado ao Supabase', 'success');
+                log('📝 Preparando SQL para user_profiles...', 'info');
+
+                const sql = `
+                    ALTER TABLE public.user_profiles
+                    ADD COLUMN IF NOT EXISTS smtp_host TEXT,
+                    ADD COLUMN IF NOT EXISTS email_porta INTEGER DEFAULT 587,
+                    ADD COLUMN IF NOT EXISTS email_usuario TEXT,
+                    ADD COLUMN IF NOT EXISTS smtp_pass TEXT,
+                    ADD COLUMN IF NOT EXISTS smtp_from_name TEXT,
+                    ADD COLUMN IF NOT EXISTS smtp_seguranca TEXT DEFAULT 'tls',
+                    ADD COLUMN IF NOT EXISTS signature_image TEXT,
+                    ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;
+                `;
+
+                log('⚙️ Executando ALTER TABLE na tabela user_profiles...', 'info');
+
+                // Tentar executar via REST API
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/exec_sql`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_SERVICE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`
+                    },
+                    body: JSON.stringify({ sql_query: sql })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Função RPC não disponível. Use o SQL Editor do Supabase.');
+                }
+
+                const data = await response.json();
+                
+                log('✅ Colunas adicionadas com sucesso na tabela user_profiles!', 'success');
+                log('🎉 Processo concluído!', 'success');
+                log('', 'info');
+                log('👤 Vantagens do novo modelo:', 'success');
+                log('  ✓ Cada usuário tem suas próprias configurações de email', 'info');
+                log('  ✓ Configurações isoladas por usuário', 'info');
+                log('  ✓ Mais segurança e privacidade', 'info');
+                log('', 'info');
+                log('Próximos passos:', 'info');
+                log('1. Acesse Settings → Email no sistema', 'info');
+                log('2. Configure suas credenciais SMTP pessoais', 'info');
+                log('3. Cada usuário poderá configurar seu próprio email', 'info');
+
+            } catch (error) {
+                log('⚠️ ' + error.message, 'warning');
+                log('', 'info');
+                log('📌 SOLUÇÃO ALTERNATIVA:', 'warning');
+                log('1. Copie o SQL acima (botão "Copiar SQL")', 'info');
+                log('2. Acesse: https://nrbsocawokmihvxfcpso.supabase.co/project/_/sql', 'info');
+                log('3. Cole o SQL no editor', 'info');
+                log('4. Clique em "Run" para executar', 'info');
+                log('', 'info');
+                log('✨ Depois disso, cada usuário poderá configurar seu email!', 'success');
+            } finally {
+                executeBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

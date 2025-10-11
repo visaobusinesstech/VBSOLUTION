@@ -1,0 +1,18 @@
+{
+  "timestamp": "2025-09-24T01:12:08.764Z",
+  "tables_checked": [
+    "whatsapp_atendimentos",
+    "whatsapp_mensagens",
+    "contacts"
+  ],
+  "conversations_found": 0,
+  "messages_found": 0,
+  "contacts_found": 0,
+  "missing_fields": {
+    "conversations_without_display_name": 0,
+    "messages_without_wpp_name": 0,
+    "messages_without_raw": 0,
+    "contacts_without_name_wpp": 0
+  },
+  "sample_data": {}
+}

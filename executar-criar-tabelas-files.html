@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar Tabela Files e Storage - VB Solution CRM</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 800px;
+      width: 100%;
+      padding: 40px;
+    }
+    h1 {
+      color: #2d3748;
+      font-size: 28px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .subtitle {
+      color: #718096;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    .info-box {
+      background: #f7fafc;
+      border-left: 4px solid #4299e1;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+    }
+    .info-box h3 {
+      color: #2d3748;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .info-box p {
+      color: #4a5568;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .button-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 25px;
+    }
+    button {
+      flex: 1;
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #2d3748;
+    }
+    .btn-secondary:hover {
+      background: #cbd5e0;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    .log-container {
+      margin-top: 30px;
+      background: #1a202c;
+      border-radius: 10px;
+      padding: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .log-entry {
+      margin-bottom: 8px;
+      padding: 8px;
+      border-radius: 5px;
+    }
+    .log-entry.info {
+      color: #63b3ed;
+    }
+    .log-entry.success {
+      color: #48bb78;
+      background: rgba(72, 187, 120, 0.1);
+    }
+    .log-entry.error {
+      color: #fc8181;
+      background: rgba(252, 129, 129, 0.1);
+    }
+    .log-entry.warning {
+      color: #f6ad55;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 20px;
+      display: none;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .stat-card {
+      background: #f7fafc;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🗄️ Configuração de Arquivos</h1>
+    <p class="subtitle">Criar tabela files e configurar storage bucket</p>
+
+    <div class="info-box">
+      <h3>📋 O que este script fará:</h3>
+      <p>
+        1. Criar a tabela <strong>files</strong> no banco de dados<br>
+        2. Configurar índices para melhor performance<br>
+        3. Criar policies de segurança (RLS)<br>
+        4. Criar bucket de storage <strong>files</strong><br>
+        5. Configurar permissões de acesso aos arquivos<br>
+        6. Criar funções auxiliares para gerenciamento
+      </p>
+    </div>
+
+    <div class="stats" id="stats" style="display: none;">
+      <div class="stat-card">
+        <div class="stat-value" id="tablesCreated">0</div>
+        <div class="stat-label">Tabelas Criadas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="policiesCreated">0</div>
+        <div class="stat-label">Policies Criadas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="bucketsCreated">0</div>
+        <div class="stat-label">Buckets Criados</div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="btn-secondary" onclick="testConnection()">
+        Testar Conexão
+      </button>
+      <button class="btn-primary" onclick="executeSetup()" id="executeBtn">
+        Executar Setup
+      </button>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="log-container" id="logContainer">
+      <div class="log-entry info">Aguardando execução...</div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://nrbsocawokmihvxfcpso.supabase.co';
+    const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnNvY2F3b2ttaWh2eGZjcHNvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjQ3NDA1MywiZXhwIjoyMDcyMDUwMDUzfQ.w6EJDzQj1fffHJ4lYzOVDLydqhbhGOW5KtGBDjaHfPA';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+    let stats = {
+      tablesCreated: 0,
+      policiesCreated: 0,
+      bucketsCreated: 0
+    };
+
+    function log(message, type = 'info') {
+      const logContainer = document.getElementById('logContainer');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function updateStats() {
+      document.getElementById('stats').style.display = 'grid';
+      document.getElementById('tablesCreated').textContent = stats.tablesCreated;
+      document.getElementById('policiesCreated').textContent = stats.policiesCreated;
+      document.getElementById('bucketsCreated').textContent = stats.bucketsCreated;
+    }
+
+    function updateProgress(percent) {
+      const progressBar = document.getElementById('progressBar');
+      const progressFill = document.getElementById('progressFill');
+      progressBar.style.display = 'block';
+      progressFill.style.width = percent + '%';
+    }
+
+    async function testConnection() {
+      log('🔍 Testando conexão com Supabase...', 'info');
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('count')
+          .limit(1);
+
+        if (error) throw error;
+
+        log('✅ Conexão estabelecida com sucesso!', 'success');
+        log(`📊 Banco de dados acessível`, 'success');
+      } catch (error) {
+        log(`❌ Erro na conexão: ${error.message}`, 'error');
+      }
+    }
+
+    async function executeSetup() {
+      const btn = document.getElementById('executeBtn');
+      btn.disabled = true;
+      log('🚀 Iniciando configuração...', 'info');
+      updateProgress(0);
+
+      try {
+        // Passo 1: Criar a tabela files
+        log('📝 Criando tabela files...', 'info');
+        updateProgress(20);
+
+        const { error: tableError } = await supabase.rpc('exec_sql', {
+          query: `
+            CREATE TABLE IF NOT EXISTS files (
+              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+              owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+              name TEXT NOT NULL,
+              path TEXT NOT NULL,
+              size BIGINT NOT NULL,
+              type TEXT NOT NULL,
+              folder TEXT DEFAULT '/',
+              tags TEXT[] DEFAULT '{}',
+              favorite BOOLEAN DEFAULT FALSE,
+              shared BOOLEAN DEFAULT FALSE,
+              private BOOLEAN DEFAULT FALSE,
+              description TEXT,
+              created_at TIMESTAMPTZ DEFAULT NOW(),
+              updated_at TIMESTAMPTZ DEFAULT NOW(),
+              viewed_at TIMESTAMPTZ
+            );
+          `
+        });
+
+        if (!tableError) {
+          stats.tablesCreated++;
+          log('✅ Tabela files criada com sucesso!', 'success');
+        }
+        updateProgress(40);
+
+        // Passo 2: Criar índices
+        log('📇 Criando índices...', 'info');
+        
+        const indexes = [
+          'CREATE INDEX IF NOT EXISTS idx_files_owner_id ON files(owner_id)',
+          'CREATE INDEX IF NOT EXISTS idx_files_folder ON files(folder)',
+          'CREATE INDEX IF NOT EXISTS idx_files_favorite ON files(favorite)',
+          'CREATE INDEX IF NOT EXISTS idx_files_shared ON files(shared)',
+          'CREATE INDEX IF NOT EXISTS idx_files_private ON files(private)',
+          'CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at DESC)',
+          'CREATE INDEX IF NOT EXISTS idx_files_viewed_at ON files(viewed_at DESC NULLS LAST)'
+        ];
+
+        for (const index of indexes) {
+          await supabase.rpc('exec_sql', { query: index });
+        }
+
+        log('✅ Índices criados com sucesso!', 'success');
+        updateProgress(60);
+
+        // Passo 3: Configurar RLS
+        log('🔒 Configurando políticas de segurança (RLS)...', 'info');
+        
+        await supabase.rpc('exec_sql', {
+          query: 'ALTER TABLE files ENABLE ROW LEVEL SECURITY'
+        });
+
+        const policies = [
+          {
+            name: 'users_view_own_files',
+            sql: `CREATE POLICY "users_view_own_files" ON files FOR SELECT USING (owner_id = auth.uid())`
+          },
+          {
+            name: 'users_view_shared_files',
+            sql: `CREATE POLICY "users_view_shared_files" ON files FOR SELECT USING (shared = TRUE)`
+          },
+          {
+            name: 'users_insert_own_files',
+            sql: `CREATE POLICY "users_insert_own_files" ON files FOR INSERT WITH CHECK (owner_id = auth.uid())`
+          },
+          {
+            name: 'users_update_own_files',
+            sql: `CREATE POLICY "users_update_own_files" ON files FOR UPDATE USING (owner_id = auth.uid()) WITH CHECK (owner_id = auth.uid())`
+          },
+          {
+            name: 'users_delete_own_files',
+            sql: `CREATE POLICY "users_delete_own_files" ON files FOR DELETE USING (owner_id = auth.uid())`
+          }
+        ];
+
+        for (const policy of policies) {
+          try {
+            await supabase.rpc('exec_sql', { query: policy.sql });
+            stats.policiesCreated++;
+            log(`✅ Policy ${policy.name} criada`, 'success');
+          } catch (error) {
+            log(`⚠️ Policy ${policy.name} já existe ou erro: ${error.message}`, 'warning');
+          }
+        }
+
+        updateProgress(80);
+
+        // Passo 4: Criar bucket de storage
+        log('🗃️ Criando bucket de storage...', 'info');
+        
+        try {
+          const { data: bucketData, error: bucketError } = await supabase.storage.createBucket('files', {
+            public: false,
+            fileSizeLimit: 52428800, // 50MB
+            allowedMimeTypes: null
+          });
+
+          if (!bucketError) {
+            stats.bucketsCreated++;
+            log('✅ Bucket files criado com sucesso!', 'success');
+          } else if (bucketError.message.includes('already exists')) {
+            log('⚠️ Bucket files já existe', 'warning');
+            stats.bucketsCreated++;
+          } else {
+            throw bucketError;
+          }
+        } catch (error) {
+          log(`⚠️ Erro ao criar bucket: ${error.message}`, 'warning');
+        }
+
+        updateProgress(100);
+
+        // Atualizar estatísticas
+        updateStats();
+
+        log('', 'info');
+        log('🎉 CONFIGURAÇÃO CONCLUÍDA COM SUCESSO!', 'success');
+        log('', 'info');
+        log('📊 Resumo:', 'info');
+        log(`   • Tabelas criadas: ${stats.tablesCreated}`, 'info');
+        log(`   • Policies criadas: ${stats.policiesCreated}`, 'info');
+        log(`   • Buckets criados: ${stats.bucketsCreated}`, 'info');
+        log('', 'info');
+        log('✨ Você já pode usar o sistema de arquivos!', 'success');
+
+      } catch (error) {
+        log(`❌ Erro durante a configuração: ${error.message}`, 'error');
+        console.error(error);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Log inicial
+    log('👋 Bem-vindo ao setup de arquivos do VB Solution CRM', 'info');
+    log('💡 Clique em "Testar Conexão" para verificar a conectividade', 'info');
+    log('💡 Clique em "Executar Setup" para criar as tabelas e configurações', 'info');
+  </script>
+</body>
+</html>
+
+

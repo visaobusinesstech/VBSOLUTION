@@ -1,0 +1,2 @@
+Nome,SKU,Descrição,Categoria,Quantidade,Unidade,Preço de Custo,Preço de Venda,Estoque Mínimo,Estoque Máximo,Localização,Fornecedor (Nome),Status,Código de Barras,Observações
+Produto Teste,SKU001,Descrição do produto teste,Categoria A,100,un,10.00,20.00,10,500,Estoque A,Exemplo,Exemplo,1234567890123,Observações do produto

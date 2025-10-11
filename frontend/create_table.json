@@ -1,0 +1,4 @@
+{
+  "sql_query": "CREATE TABLE IF NOT EXISTS pipeline_stages (id UUID DEFAULT gen_random_uuid() PRIMARY KEY, pipeline_id UUID REFERENCES pipelines(id) ON DELETE CASCADE, name VARCHAR(255) NOT NULL, position INTEGER NOT NULL, color VARCHAR(7) DEFAULT '#3b82f6', is_active BOOLEAN DEFAULT TRUE, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW());"
+}
+

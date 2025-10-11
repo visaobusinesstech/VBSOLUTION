@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Conexão - Tabela Suppliers</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Teste de Conexão - Tabela Suppliers</h1>
+    <div id="status">Carregando...</div>
+    <div id="results"></div>
+
+    <script>
+        const SUPABASE_URL = "https://nrbsocawokmihvxfcpso.supabase.co";
+        const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnNvY2F3b2ttaWh2eGZjcHNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzQwNTMsImV4cCI6MjA3MjA1MDA1M30.3SxEVRNNBHhAXgJ7S2BMHm1QWq9kxYamuLjvZm0_OU0";
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+        async function testSuppliersConnection() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                statusDiv.textContent = 'Testando conexão com tabela suppliers...';
+                
+                // Teste 1: Verificar se a tabela suppliers existe
+                resultsDiv.innerHTML += '<h3>1. Verificando tabela suppliers:</h3>';
+                try {
+                    const { data: suppliersData, error: suppliersError } = await supabase
+                        .from('suppliers')
+                        .select('count')
+                        .limit(1);
+                    
+                    if (suppliersError) {
+                        resultsDiv.innerHTML += `<p>❌ Erro ao acessar tabela suppliers: ${suppliersError.message}</p>`;
+                        resultsDiv.innerHTML += `<p>Detalhes: ${JSON.stringify(suppliersError, null, 2)}</p>`;
+                    } else {
+                        resultsDiv.innerHTML += `<p>✅ Tabela suppliers acessível</p>`;
+                    }
+                } catch (err) {
+                    resultsDiv.innerHTML += `<p>❌ Erro ao acessar suppliers: ${err.message}</p>`;
+                }
+                
+                // Teste 2: Verificar estrutura da tabela suppliers
+                resultsDiv.innerHTML += '<h3>2. Estrutura da tabela suppliers:</h3>';
+                try {
+                    const { data: structureData, error: structureError } = await supabase
+                        .from('suppliers')
+                        .select('*')
+                        .limit(0);
+                    
+                    if (structureError) {
+                        resultsDiv.innerHTML += `<p>❌ Erro ao verificar estrutura: ${structureError.message}</p>`;
+                    } else {
+                        resultsDiv.innerHTML += `<p>✅ Estrutura verificada</p>`;
+                    }
+                } catch (err) {
+                    resultsDiv.innerHTML += `<p>❌ Erro ao verificar estrutura: ${err.message}</p>`;
+                }
+                
+                // Teste 3: Tentar buscar fornecedores sem filtro
+                resultsDiv.innerHTML += '<h3>3. Buscando fornecedores (sem filtro):</h3>';
+                try {
+                    const { data: allSuppliers, error: allSuppliersError } = await supabase
+                        .from('suppliers')
+                        .select('*')
+                        .limit(5);
+                    
+                    if (allSuppliersError) {
+                        resultsDiv.innerHTML += `<p>❌ Erro ao buscar fornecedores: ${allSuppliersError.message}</p>`;
+                    } else {
+                        resultsDiv.innerHTML += `<p>✅ Fornecedores encontrados: ${allSuppliers ? allSuppliers.length : 0}</p>`;
+                        if (allSuppliers && allSuppliers.length > 0) {
+                            resultsDiv.innerHTML += `<p>Primeiro fornecedor: ${JSON.stringify(allSuppliers[0], null, 2)}</p>`;
+                        }
+                    }
+                } catch (err) {
+                    resultsDiv.innerHTML += `<p>❌ Erro ao buscar fornecedores: ${err.message}</p>`;
+                }
+                
+                // Teste 4: Verificar políticas RLS
+                resultsDiv.innerHTML += '<h3>4. Verificando políticas RLS:</h3>';
+                try {
+                    const { data: policiesData, error: policiesError } = await supabase
+                        .from('suppliers')
+                        .select('*')
+                        .eq('responsible_id', 'test-user-id')
+                        .limit(1);
+                    
+                    if (policiesError) {
+                        resultsDiv.innerHTML += `<p>❌ Erro com filtro responsible_id: ${policiesError.message}</p>`;
+                        resultsDiv.innerHTML += `<p>Isso pode indicar problema com políticas RLS</p>`;
+                    } else {
+                        resultsDiv.innerHTML += `<p>✅ Filtro responsible_id funcionando</p>`;
+                    }
+                } catch (err) {
+                    resultsDiv.innerHTML += `<p>❌ Erro com filtro: ${err.message}</p>`;
+                }
+                
+                statusDiv.textContent = 'Teste concluído!';
+                
+            } catch (error) {
+                statusDiv.textContent = 'Erro no teste!';
+                resultsDiv.innerHTML += `<p>❌ Erro geral: ${error.message}</p>`;
+                console.error('Erro no teste:', error);
+            }
+        }
+
+        // Executar teste quando a página carregar
+        window.addEventListener('load', testSuppliersConnection);
+    </script>
+</body>
+</html>

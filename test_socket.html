@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Socket.IO</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Teste Socket.IO - WhatsApp</h1>
+    <div id="status">Conectando...</div>
+    <div id="messages"></div>
+    <button onclick="joinRoom()">Entrar na Sala</button>
+    <button onclick="sendMessage()">Enviar Mensagem de Teste</button>
+
+    <script>
+        const socket = io('http://localhost:3000');
+        
+        socket.on('connect', () => {
+            document.getElementById('status').textContent = 'Conectado!';
+            console.log('Conectado ao Socket.IO');
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('status').textContent = 'Desconectado';
+            console.log('Desconectado do Socket.IO');
+        });
+
+        socket.on('newMessage', (message) => {
+            console.log('Nova mensagem recebida:', message);
+            const div = document.createElement('div');
+            div.textContent = `Mensagem: ${message.conteudo} (${message.remetente})`;
+            div.style.border = '1px solid #ccc';
+            div.style.padding = '10px';
+            div.style.margin = '5px';
+            document.getElementById('messages').appendChild(div);
+        });
+
+        socket.on('conversation:updated', (data) => {
+            console.log('Conversa atualizada:', data);
+            const div = document.createElement('div');
+            div.textContent = `Conversa atualizada: ${data.conversationId}`;
+            div.style.border = '1px solid #green';
+            div.style.padding = '10px';
+            div.style.margin = '5px';
+            document.getElementById('messages').appendChild(div);
+        });
+
+        function joinRoom() {
+            const connectionId = 'connection_1757649040585';
+            const chatId = '554796643900@s.whatsapp.net';
+            
+            console.log('Entrando na sala:', `${connectionId}-${chatId}`);
+            socket.emit('join', {
+                connectionId: connectionId,
+                conversationId: chatId
+            });
+        }
+
+        function sendMessage() {
+            fetch('http://localhost:3000/api/baileys-simple/connections/connection_1757649040585/send-message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chatId: '554796643900@s.whatsapp.net',
+                    type: 'text',
+                    text: 'Mensagem de teste via Socket.IO'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Mensagem enviada:', data);
+            })
+            .catch(error => {
+                console.error('Erro ao enviar mensagem:', error);
+            });
+        }
+    </script>
+</body>
+</html>

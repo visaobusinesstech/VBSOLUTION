@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist de Teste SMTP Real</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        .content {
+            padding: 40px;
+        }
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 30px;
+            margin: 30px 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .checklist-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .checklist-item.completed {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+        .checklist-item.completed .checkbox {
+            background: #28a745;
+            border-color: #28a745;
+        }
+        .checklist-item.completed .checkbox::after {
+            content: "✓";
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            display: block;
+        }
+        .checkbox {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #ccc;
+            border-radius: 8px;
+            display: inline-block;
+            margin-right: 15px;
+            vertical-align: middle;
+            transition: all 0.3s ease;
+            text-align: center;
+            line-height: 24px;
+        }
+        .item-content {
+            display: inline-block;
+            vertical-align: middle;
+            width: calc(100% - 50px);
+        }
+        .item-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .item-description {
+            color: #666;
+            font-size: 0.95em;
+        }
+        .step-number {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .alert {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #856404;
+        }
+        .alert.success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .alert.info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        .btn.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        .btn-group {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .congratulations {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+        .congratulations.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .confetti {
+            font-size: 3em;
+            animation: confetti 1s ease infinite;
+        }
+        @keyframes confetti {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">🧪</div>
+            <h1>Teste SMTP Real</h1>
+            <p>Siga o checklist para testar o sistema</p>
+        </div>
+        
+        <div class="content">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar">0%</div>
+            </div>
+
+            <div class="alert info">
+                <strong>📋 INSTRUÇÕES:</strong><br>
+                Clique em cada item para marcá-lo como concluído. O progresso será atualizado automaticamente!
+            </div>
+
+            <ul class="checklist" id="checklist">
+                <li class="checklist-item" onclick="toggleItem(this)">
+                    <span class="step-number">1</span>
+                    <span class="checkbox"></span>
+                    <div class="item-content">
+                        <div class="item-title">✅ Script SQL Executado</div>
+                        <div class="item-description">Execute o script CRIAR_TABELA_SMTP_SETTINGS.sql no Supabase SQL Editor</div>
+                    </div>
+                </li>
+
+                <li class="checklist-item" onclick="toggleItem(this)">
+                    <span class="step-number">2</span>
+                    <span class="checkbox"></span>
+                    <div class="item-content">
+                        <div class="item-title">🚀 Edge Function Deployada</div>
+                        <div class="item-description">Deploy da função send-email-real no Supabase Dashboard → Edge Functions</div>
+                    </div>
+                </li>
+
+                <li class="checklist-item" onclick="toggleItem(this)">
+                    <span class="step-number">3</span>
+                    <span class="checkbox"></span>
+                    <div class="item-content">
+                        <div class="item-title">🌐 Sistema Iniciado</div>
+                        <div class="item-description">Servidor de desenvolvimento rodando (pnpm dev) em http://localhost:5173</div>
+                    </div>
+                </li>
+
+                <li class="checklist-item" onclick="toggleItem(this)">
+                    <span class="step-number">4</span>
+                    <span class="checkbox"></span>
+                    <div class="item-content">
+                        <div class="item-title">🔑 Login Realizado</div>
+                        <div class="item-description">Acesse o sistema e faça login com suas credenciais</div>
+                    </div>
+                </li>
+
+                <li class="checklist-item" onclick="toggleItem(this)">
+                    <span class="step-number">5</span>
+                    <span class="checkbox"></span>
+                    <div class="item-content">
+                        <div class="item-title">⚙️ SMTP Configurado</div>
+                        <div class="item-description">Vá em Settings → Email e configure suas credenciais SMTP (host, porta, usuário, senha)</div>
+                    </div>
+                </li>
+
+                <li class="checklist-item" onclick="toggleItem(this)">
+                    <span class="step-number">6</span>
+                    <span class="checkbox"></span>
+                    <div class="item-content">
+                        <div class="item-title">📝 Template Criado (Opcional)</div>
+                        <div class="item-description">Crie um template de teste em Email → Templates</div>
+                    </div>
+                </li>
+
+                <li class="checklist-item" onclick="toggleItem(this)">
+                    <span class="step-number">7</span>
+                    <span class="checkbox"></span>
+                    <div class="item-content">
+                        <div class="item-title">📧 Email de Teste Enviado</div>
+                        <div class="item-description">Vá em Email → Agendamentos, clique no + e envie um email para você mesmo</div>
+                    </div>
+                </li>
+
+                <li class="checklist-item" onclick="toggleItem(this)">
+                    <span class="step-number">8</span>
+                    <span class="checkbox"></span>
+                    <div class="item-content">
+                        <div class="item-title">✉️ Email Recebido</div>
+                        <div class="item-description">Verifique sua caixa de entrada (ou spam) e confirme o recebimento do email</div>
+                    </div>
+                </li>
+
+                <li class="checklist-item" onclick="toggleItem(this)">
+                    <span class="step-number">9</span>
+                    <span class="checkbox"></span>
+                    <div class="item-content">
+                        <div class="item-title">🔍 Logs Verificados</div>
+                        <div class="item-description">Abra o console do navegador (F12) e verifique os logs de sucesso</div>
+                    </div>
+                </li>
+
+                <li class="checklist-item" onclick="toggleItem(this)">
+                    <span class="step-number">10</span>
+                    <span class="checkbox"></span>
+                    <div class="item-content">
+                        <div class="item-title">📊 Logs Supabase OK</div>
+                        <div class="item-description">Verifique os logs no Supabase Dashboard → Edge Functions → send-email-real</div>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="congratulations" id="congratulations">
+                <div class="confetti">🎉🎊🎈</div>
+                <h2 style="color: #28a745; margin: 20px 0;">Parabéns! Sistema SMTP 100% Funcional!</h2>
+                <p style="font-size: 1.2em; color: #666;">Todos os testes foram concluídos com sucesso! O sistema está pronto para produção.</p>
+            </div>
+
+            <div class="alert">
+                <strong>💡 DICAS:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li><strong>Gmail:</strong> Use uma senha de app, não sua senha normal</li>
+                    <li><strong>Porta:</strong> Use 587 para TLS ou 465 para SSL</li>
+                    <li><strong>Spam:</strong> O primeiro email pode cair no spam</li>
+                    <li><strong>Logs:</strong> Use F12 no navegador para ver detalhes</li>
+                </ul>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn" onclick="window.open('http://localhost:5173', '_blank')">🌐 Abrir Sistema</button>
+                <button class="btn" onclick="window.open('https://supabase.com/dashboard', '_blank')">📊 Abrir Supabase</button>
+                <button class="btn success" onclick="resetChecklist()">🔄 Resetar Checklist</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleItem(item) {
+            item.classList.toggle('completed');
+            updateProgress();
+            saveProgress();
+        }
+
+        function updateProgress() {
+            const items = document.querySelectorAll('.checklist-item');
+            const completed = document.querySelectorAll('.checklist-item.completed');
+            const percentage = Math.round((completed.length / items.length) * 100);
+            
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage + '%';
+
+            if (percentage === 100) {
+                document.getElementById('congratulations').classList.add('show');
+            } else {
+                document.getElementById('congratulations').classList.remove('show');
+            }
+        }
+
+        function saveProgress() {
+            const items = document.querySelectorAll('.checklist-item');
+            const progress = [];
+            items.forEach((item, index) => {
+                progress.push(item.classList.contains('completed'));
+            });
+            localStorage.setItem('smtp-checklist-progress', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('smtp-checklist-progress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                const items = document.querySelectorAll('.checklist-item');
+                items.forEach((item, index) => {
+                    if (progress[index]) {
+                        item.classList.add('completed');
+                    }
+                });
+                updateProgress();
+            }
+        }
+
+        function resetChecklist() {
+            if (confirm('Tem certeza que deseja resetar o checklist?')) {
+                const items = document.querySelectorAll('.checklist-item');
+                items.forEach(item => {
+                    item.classList.remove('completed');
+                });
+                updateProgress();
+                saveProgress();
+            }
+        }
+
+        // Carregar progresso salvo
+        window.onload = loadProgress;
+    </script>
+</body>
+</html>
+
+

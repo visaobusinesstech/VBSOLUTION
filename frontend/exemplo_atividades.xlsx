@@ -1,0 +1,4 @@
+Título	Descrição	Data de Vencimento	Prioridade	Status	Tipo	Responsável (Nome)	Empresa (Nome)	Observações	Horas Estimadas
+Reunião com cliente	Apresentar proposta comercial	2025-01-20	high	pending	meeting	João Silva	Empresa ABC	Preparar apresentação completa	2
+Enviar relatório	Relatório mensal de vendas	2025-01-15	medium	in_progress	task	Maria Santos	Empresa XYZ	Incluir gráficos de performance	4
+Desenvolver funcionalidade	Nova feature do sistema	2025-01-25	high	todo	task	Pedro Costa	TechCorp	Implementar validações	8

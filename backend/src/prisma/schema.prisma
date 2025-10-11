@@ -1,0 +1,262 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Atendimento {
+  id            Int         @id @default(autoincrement())
+  numero        String
+  clienteNome   String?     
+  atendenteId   Int?
+  status        AtendimentoStatus @default(NOVO)
+  canal         String       @default("whatsapp")
+  dataInicio    DateTime     @default(now())
+  dataFim       DateTime?
+  mensagens     Mensagem[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([numero, status])
+  @@index([atendenteId])
+}
+
+model Mensagem {
+  id            Int       @id @default(autoincrement())
+  atendimentoId Int
+  remetente     Remetente
+  tipo          TipoMensagem
+  conteudo      String?
+  midiaPath     String?
+  mimeType      String?
+  createdAt     DateTime  @default(now())
+  atendimento   Atendimento @relation(fields: [atendimentoId], references: [id], onDelete: Cascade)
+
+  @@index([atendimentoId, createdAt])
+}
+
+model OpcaoAtendimento {
+  id            Int    @id @default(autoincrement())
+  ordem         Int
+  titulo        String
+  atendenteId   Int
+  ativo         Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([ordem, ativo])
+}
+
+model ConfiguracaoAtendimento {
+  id             Int    @id @default(autoincrement())
+  mensagemPadrao String
+  opcoes         Json
+  ativo          Boolean @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// Modelos para Integrações
+model Integration {
+  id              String            @id @default(cuid())
+  userId          String            // ID do usuário proprietário
+  platform        IntegrationPlatform
+  name            String
+  description     String?
+  isActive        Boolean           @default(true)
+  isConnected     Boolean           @default(false)
+  config          Json?             // Configurações específicas da plataforma
+  lastSyncAt      DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relacionamentos
+  tokens          IntegrationToken[]
+  permissions     IntegrationPermission[]
+  actions         AgentAction[]
+  
+  @@index([userId])
+  @@index([platform])
+  @@index([isActive])
+}
+
+model IntegrationToken {
+  id              String            @id @default(cuid())
+  integrationId   String
+  tokenType       TokenType
+  accessToken     String            // Token criptografado
+  refreshToken    String?           // Refresh token criptografado
+  expiresAt       DateTime?
+  scope           String?           // Escopo das permissões
+  metadata        Json?             // Metadados adicionais
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  integration     Integration       @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  
+  @@index([integrationId])
+  @@index([tokenType])
+}
+
+model IntegrationPermission {
+  id              String            @id @default(cuid())
+  integrationId   String
+  permission      String            // Ex: "calendar.events.create", "pages.manage_posts"
+  granted         Boolean           @default(true)
+  grantedAt       DateTime          @default(now())
+  revokedAt       DateTime?
+  
+  integration     Integration       @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  
+  @@unique([integrationId, permission])
+  @@index([integrationId])
+}
+
+model Leads {
+  id              String            @id @default(cuid())
+  ownerId         String            // Usuário proprietário (RLS)
+  name            String
+  email           String?
+  phone           String?
+  company         String?
+  source          String?           // 'website', 'referral', 'social_media', etc.
+  status          String            @default("new") // 'new', 'contacted', 'qualified', 'converted', 'lost'
+  assigned_to     String?
+  value           Decimal?          @db.Decimal(10,2)
+  notes           String?
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  
+  // Relacionamentos
+  activities      LeadActivities[]
+  
+  @@index([ownerId])
+  @@index([status])
+  @@index([assigned_to])
+}
+
+model Event {
+  id              String            @id @default(uuid())
+  owner_id        String            @map("owner_id")
+  company_id      String?           @map("company_id")
+  title           String
+  description     String?
+  start_time      DateTime          @map("start_time")
+  end_time        DateTime?         @map("end_time")
+  all_day         Boolean           @default(false) @map("all_day")
+  location        String?
+  attendees       Json?             // JSON array de emails
+  created_at      DateTime          @default(now()) @map("created_at")
+  updated_at      DateTime          @updatedAt @map("updated_at")
+  
+  @@map("events")
+  @@index([owner_id])
+  @@index([start_time])
+}
+
+model AgentAction {
+  id              String            @id @default(cuid())
+  integrationId   String?
+  userId          String
+  name            String
+  description     String?
+  actionType      ActionType
+  config          Json              // Configuração específica da ação
+  isActive        Boolean           @default(true)
+  triggerConfig   Json?             // Configuração de triggers
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  integration     Integration?      @relation(fields: [integrationId], references: [id], onDelete: SetNull)
+  executions      AgentActionExecution[]
+  
+  @@index([userId])
+  @@index([actionType])
+  @@index([isActive])
+}
+
+model AgentActionExecution {
+  id              String            @id @default(cuid())
+  actionId        String
+  status          ExecutionStatus   @default(PENDING)
+  input           Json?             // Dados de entrada
+  output          Json?             // Resultado da execução
+  error           String?           // Mensagem de erro se houver
+  startedAt       DateTime          @default(now())
+  completedAt     DateTime?
+  
+  action          AgentAction       @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  
+  @@index([actionId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+// Enums
+enum AtendimentoStatus {
+  NOVO
+  EM_ATENDIMENTO
+  FINALIZADO
+}
+
+enum Remetente {
+  CLIENTE
+  ATENDENTE
+  ROBO
+}
+
+enum TipoMensagem {
+  TEXT
+  IMAGE
+  AUDIO
+  DOCUMENT
+  STICKER
+  LOCATION
+  CONTACT
+  UNKNOWN
+}
+
+enum IntegrationPlatform {
+  GOOGLE
+  FACEBOOK
+  INSTAGRAM
+  META
+  WHATSAPP
+  WEBHOOK
+}
+
+enum TokenType {
+  ACCESS_TOKEN
+  REFRESH_TOKEN
+  ID_TOKEN
+  WEBHOOK_TOKEN
+}
+
+enum ActionType {
+  CALENDAR_CREATE_EVENT
+  CALENDAR_UPDATE_EVENT
+  CALENDAR_DELETE_EVENT
+  CALENDAR_LIST_EVENTS
+  FACEBOOK_CREATE_POST
+  FACEBOOK_UPDATE_POST
+  FACEBOOK_DELETE_POST
+  FACEBOOK_RESPOND_COMMENT
+  INSTAGRAM_CREATE_MEDIA
+  INSTAGRAM_PUBLISH_MEDIA
+  INSTAGRAM_RESPOND_COMMENT
+  WHATSAPP_SEND_MESSAGE
+  EMAIL_SEND
+  WEBHOOK_TRIGGER
+  CUSTOM_ACTION
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}

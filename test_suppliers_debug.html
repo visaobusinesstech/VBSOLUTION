@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Problema de Fornecedores</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        .warning { color: #ffc107; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .user-info {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug - Problema de Fornecedores</h1>
+        
+        <div class="test-section">
+            <h3>1. Verificar Conexão com Supabase</h3>
+            <button onclick="testSupabaseConnection()">Testar Conexão</button>
+            <div id="connection-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Verificar Autenticação</h3>
+            <button onclick="testAuthentication()">Verificar Usuário Logado</button>
+            <div id="auth-result"></div>
+            <div id="user-info" class="user-info" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Verificar Estrutura da Tabela</h3>
+            <button onclick="testTableStructure()">Verificar Tabela Suppliers</button>
+            <div id="table-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Testar Busca de Fornecedores</h3>
+            <button onclick="testFetchSuppliers()">Buscar Fornecedores</button>
+            <div id="fetch-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Testar Criação de Fornecedor</h3>
+            <button onclick="testCreateSupplier()">Criar Fornecedor Teste</button>
+            <div id="create-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. Verificar Políticas RLS</h3>
+            <button onclick="testRLSPolicies()">Verificar RLS</button>
+            <div id="rls-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Log de Debug</h3>
+            <div id="debug-log" class="log"></div>
+            <button onclick="clearLog()">Limpar Log</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2';
+
+        // Configuração do Supabase (substitua pelas suas credenciais)
+        const supabaseUrl = 'SUA_SUPABASE_URL_AQUI';
+        const supabaseKey = 'SUA_SUPABASE_ANON_KEY_AQUI';
+        
+        let supabase;
+        let currentUser = null;
+
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
+            logElement.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('debug-log').innerHTML = '';
+        }
+
+        async function testSupabaseConnection() {
+            try {
+                log('🔍 Testando conexão com Supabase...');
+                
+                if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('SUA_SUPABASE_URL_AQUI')) {
+                    throw new Error('Configure as credenciais do Supabase no script');
+                }
+
+                supabase = createClient(supabaseUrl, supabaseKey);
+                
+                // Testar conexão básica
+                const { data, error } = await supabase.from('suppliers').select('count').limit(1);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                log('✅ Conexão com Supabase estabelecida com sucesso!', 'success');
+                document.getElementById('connection-result').innerHTML = '<span class="success">✅ Conexão OK</span>';
+                
+            } catch (error) {
+                log(`❌ Erro na conexão: ${error.message}`, 'error');
+                document.getElementById('connection-result').innerHTML = `<span class="error">❌ Erro: ${error.message}</span>`;
+            }
+        }
+
+        async function testAuthentication() {
+            try {
+                log('🔍 Verificando autenticação...');
+                
+                if (!supabase) {
+                    throw new Error('Supabase não inicializado. Execute o teste de conexão primeiro.');
+                }
+
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (!user) {
+                    throw new Error('Nenhum usuário autenticado. Faça login primeiro.');
+                }
+                
+                currentUser = user;
+                log(`✅ Usuário autenticado: ${user.email} (ID: ${user.id})`, 'success');
+                document.getElementById('auth-result').innerHTML = `<span class="success">✅ Logado como: ${user.email}</span>`;
+                
+                // Mostrar informações detalhadas do usuário
+                const userInfo = document.getElementById('user-info');
+                userInfo.innerHTML = `
+                    <strong>Informações do Usuário:</strong><br>
+                    ID: ${user.id}<br>
+                    Email: ${user.email}<br>
+                    Criado em: ${new Date(user.created_at).toLocaleString()}<br>
+                    Último login: ${new Date(user.last_sign_in_at).toLocaleString()}
+                `;
+                userInfo.style.display = 'block';
+                
+            } catch (error) {
+                log(`❌ Erro na autenticação: ${error.message}`, 'error');
+                document.getElementById('auth-result').innerHTML = `<span class="error">❌ Erro: ${error.message}</span>`;
+            }
+        }
+
+        async function testTableStructure() {
+            try {
+                log('🔍 Verificando estrutura da tabela suppliers...');
+                
+                if (!supabase) {
+                    throw new Error('Supabase não inicializado.');
+                }
+
+                // Tentar buscar dados sem filtro (deve falhar se RLS estiver ativo)
+                const { data, error } = await supabase
+                    .from('suppliers')
+                    .select('*')
+                    .limit(1);
+
+                if (error) {
+                    log(`⚠️ Erro ao acessar tabela (esperado se RLS estiver ativo): ${error.message}`, 'warning');
+                } else {
+                    log(`✅ Tabela acessível sem autenticação: ${data.length} registros`, 'warning');
+                }
+                
+                document.getElementById('table-result').innerHTML = '<span class="success">✅ Estrutura verificada</span>';
+                
+            } catch (error) {
+                log(`❌ Erro ao verificar estrutura: ${error.message}`, 'error');
+                document.getElementById('table-result').innerHTML = `<span class="error">❌ Erro: ${error.message}</span>`;
+            }
+        }
+
+        async function testFetchSuppliers() {
+            try {
+                log('🔍 Testando busca de fornecedores...');
+                
+                if (!supabase || !currentUser) {
+                    throw new Error('Supabase não inicializado ou usuário não autenticado.');
+                }
+
+                const { data, error } = await supabase
+                    .from('suppliers')
+                    .select('*')
+                    .eq('owner_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    throw error;
+                }
+                
+                log(`✅ ${data.length} fornecedores encontrados para o usuário`, 'success');
+                document.getElementById('fetch-result').innerHTML = `<span class="success">✅ ${data.length} fornecedores encontrados</span>`;
+                
+                // Mostrar os primeiros fornecedores
+                if (data.length > 0) {
+                    log('📋 Fornecedores encontrados:');
+                    data.slice(0, 3).forEach((supplier, index) => {
+                        log(`  ${index + 1}. ${supplier.name} (${supplier.city || 'N/A'}, ${supplier.state || 'N/A'})`);
+                    });
+                } else {
+                    log('📋 Nenhum fornecedor encontrado para este usuário');
+                }
+                
+            } catch (error) {
+                log(`❌ Erro ao buscar fornecedores: ${error.message}`, 'error');
+                document.getElementById('fetch-result').innerHTML = `<span class="error">❌ Erro: ${error.message}</span>`;
+            }
+        }
+
+        async function testCreateSupplier() {
+            try {
+                log('🔍 Testando criação de fornecedor...');
+                
+                if (!supabase || !currentUser) {
+                    throw new Error('Supabase não inicializado ou usuário não autenticado.');
+                }
+
+                const testSupplier = {
+                    name: `Fornecedor Teste Debug ${Date.now()}`,
+                    fantasy_name: 'Empresa Teste Debug LTDA',
+                    cnpj: '12.345.678/0001-90',
+                    phone: '(11) 99999-9999',
+                    city: 'São Paulo',
+                    state: 'SP',
+                    notes: 'Fornecedor criado via debug',
+                    owner_id: currentUser.id
+                };
+
+                log(`📝 Criando fornecedor: ${testSupplier.name}`);
+                
+                const { data, error } = await supabase
+                    .from('suppliers')
+                    .insert([testSupplier])
+                    .select()
+                    .single();
+
+                if (error) {
+                    throw error;
+                }
+                
+                log(`✅ Fornecedor criado com sucesso! ID: ${data.id}`, 'success');
+                document.getElementById('create-result').innerHTML = `<span class="success">✅ Fornecedor criado: ${data.name}</span>`;
+                
+            } catch (error) {
+                log(`❌ Erro ao criar fornecedor: ${error.message}`, 'error');
+                document.getElementById('create-result').innerHTML = `<span class="error">❌ Erro: ${error.message}</span>`;
+            }
+        }
+
+        async function testRLSPolicies() {
+            try {
+                log('🔍 Verificando políticas RLS...');
+                
+                if (!supabase) {
+                    throw new Error('Supabase não inicializado.');
+                }
+
+                // Tentar buscar dados sem filtro de owner_id
+                const { data, error } = await supabase
+                    .from('suppliers')
+                    .select('*')
+                    .limit(5);
+
+                if (error) {
+                    log(`✅ RLS ativo - erro esperado: ${error.message}`, 'success');
+                    document.getElementById('rls-result').innerHTML = '<span class="success">✅ RLS ativo</span>';
+                } else {
+                    log(`⚠️ RLS pode não estar ativo - dados retornados: ${data.length} registros`, 'warning');
+                    document.getElementById('rls-result').innerHTML = '<span class="warning">⚠️ RLS pode não estar ativo</span>';
+                }
+                
+            } catch (error) {
+                log(`❌ Erro ao verificar RLS: ${error.message}`, 'error');
+                document.getElementById('rls-result').innerHTML = `<span class="error">❌ Erro: ${error.message}</span>`;
+            }
+        }
+
+        // Tornar funções globais para uso nos botões
+        window.testSupabaseConnection = testSupabaseConnection;
+        window.testAuthentication = testAuthentication;
+        window.testTableStructure = testTableStructure;
+        window.testFetchSuppliers = testFetchSuppliers;
+        window.testCreateSupplier = testCreateSupplier;
+        window.testRLSPolicies = testRLSPolicies;
+        window.clearLog = clearLog;
+
+        // Log inicial
+        log('🚀 Sistema de debug de fornecedores carregado');
+        log('⚠️ Configure as credenciais do Supabase no script antes de usar');
+    </script>
+</body>
+</html>

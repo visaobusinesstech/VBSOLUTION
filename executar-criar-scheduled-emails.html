@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executar Script - Tabela scheduled_emails</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .alert {
+            background-color: #e3f2fd;
+            border: 1px solid #2196f3;
+            color: #1565c0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .sql-code {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            margin: 20px 0;
+        }
+        .steps {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .copy-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .copy-btn:hover {
+            background-color: #0056b3;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ Criar Tabela scheduled_emails</h1>
+        
+        <div class="alert">
+            <strong>⚠️ IMPORTANTE:</strong> Este script cria a tabela <code>scheduled_emails</code> necessária para o sistema de agendamento de emails funcionar corretamente.
+        </div>
+
+        <div class="steps">
+            <strong>📋 Passos para Executar:</strong>
+            <ol>
+                <li>Acesse o <strong>Supabase Dashboard</strong></li>
+                <li>Vá para <strong>SQL Editor</strong></li>
+                <li>Copie o script SQL abaixo</li>
+                <li>Cole no editor e clique em <strong>Run</strong></li>
+                <li>Verifique se não há erros na execução</li>
+            </ol>
+        </div>
+
+        <button class="copy-btn" onclick="copyToClipboard()">📋 Copiar Script SQL</button>
+        
+        <div class="sql-code" id="sqlCode">-- Script para criar apenas a tabela scheduled_emails
+-- Execute este script no SQL Editor do Supabase
+
+-- 1. Criar a tabela scheduled_emails se não existir
+CREATE TABLE IF NOT EXISTS public.scheduled_emails (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    subject TEXT NOT NULL,
+    recipients TEXT[] NOT NULL,
+    message TEXT,
+    template_id UUID,
+    scheduled_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
+    sent_at TIMESTAMP WITH TIME ZONE,
+    error_message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 2. Criar índices
+CREATE INDEX IF NOT EXISTS idx_scheduled_emails_user_id ON public.scheduled_emails(user_id);
+CREATE INDEX IF NOT EXISTS idx_scheduled_emails_status ON public.scheduled_emails(status);
+CREATE INDEX IF NOT EXISTS idx_scheduled_emails_scheduled_date ON public.scheduled_emails(scheduled_date);
+
+-- 3. Habilitar RLS
+ALTER TABLE public.scheduled_emails ENABLE ROW LEVEL SECURITY;
+
+-- 4. Remover políticas existentes (se houver)
+DROP POLICY IF EXISTS "Users can view their own scheduled emails" ON public.scheduled_emails;
+DROP POLICY IF EXISTS "Users can insert their own scheduled emails" ON public.scheduled_emails;
+DROP POLICY IF EXISTS "Users can update their own scheduled emails" ON public.scheduled_emails;
+DROP POLICY IF EXISTS "Users can delete their own scheduled emails" ON public.scheduled_emails;
+
+-- 5. Criar políticas RLS
+CREATE POLICY "Users can view their own scheduled emails" ON public.scheduled_emails
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own scheduled emails" ON public.scheduled_emails
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own scheduled emails" ON public.scheduled_emails
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own scheduled emails" ON public.scheduled_emails
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- 6. Função para atualizar updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- 7. Trigger para updated_at
+DROP TRIGGER IF EXISTS update_scheduled_emails_updated_at ON public.scheduled_emails;
+CREATE TRIGGER update_scheduled_emails_updated_at
+    BEFORE UPDATE ON public.scheduled_emails
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- 8. Verificar se a tabela foi criada
+SELECT 
+    table_name,
+    column_name,
+    data_type,
+    is_nullable
+FROM information_schema.columns 
+WHERE table_name = 'scheduled_emails' 
+AND table_schema = 'public'
+ORDER BY ordinal_position;</div>
+
+        <div class="success" id="successMessage">
+            ✅ Script copiado com sucesso! Agora cole no Supabase SQL Editor.
+        </div>
+
+        <div class="alert" style="margin-top: 30px;">
+            <strong>🔍 Como Verificar se Funcionou:</strong>
+            <br><br>
+            1. Após executar o script, você deve ver uma tabela com as colunas da tabela <code>scheduled_emails</code>
+            <br>
+            2. Volte ao sistema e teste criar um agendamento
+            <br>
+            3. Se ainda der erro, verifique se o usuário está logado corretamente
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard() {
+            const sqlCode = document.getElementById('sqlCode').textContent;
+            navigator.clipboard.writeText(sqlCode).then(function() {
+                const successMsg = document.getElementById('successMessage');
+                successMsg.style.display = 'block';
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>
+
+

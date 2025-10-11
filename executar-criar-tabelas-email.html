@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Tabelas de Email - Supabase</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .info-box p {
+            color: #1e40af;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+        .log div { margin-bottom: 4px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #3b82f6; }
+        .sql-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .sql-box pre {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #334155;
+        }
+        .copy-btn {
+            background: #10b981;
+            font-size: 14px;
+            padding: 8px 16px;
+            width: auto;
+            margin-top: 10px;
+        }
+        .tables-list {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .tables-list ul {
+            list-style: none;
+        }
+        .tables-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #475569;
+        }
+        .tables-list li:last-child {
+            border-bottom: none;
+        }
+        .badge {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📧 Criar Tabelas de Email</h1>
+        <p class="subtitle">Configurar banco de dados para o sistema de email completo</p>
+
+        <div class="info-box">
+            <p><strong>ℹ️ Informação:</strong> Este script irá criar as tabelas necessárias para o sistema de email: agendamento, templates, logs e histórico de envios.</p>
+        </div>
+
+        <div class="tables-list">
+            <strong>Tabelas que serão criadas:</strong>
+            <ul>
+                <li>📅 scheduled_emails <span class="badge">Agendamento</span></li>
+                <li>📊 email_logs <span class="badge">Logs</span></li>
+                <li>📝 templates <span class="badge">Templates</span></li>
+            </ul>
+        </div>
+
+        <button id="executeBtn" onclick="openSupabase()">
+            🌐 Abrir SQL Editor do Supabase
+        </button>
+
+        <div class="sql-box">
+            <strong>SQL a ser executado (copie e cole no Supabase):</strong>
+            <pre id="sqlCode">-- Ver arquivo CREATE_EMAIL_TABLES.sql completo
+-- Ou copie o SQL abaixo:
+
+CREATE TABLE IF NOT EXISTS public.scheduled_emails (...);
+CREATE TABLE IF NOT EXISTS public.email_logs (...);
+CREATE TABLE IF NOT EXISTS public.templates (...);
+
+-- Índices, RLS e triggers incluídos</pre>
+            <button class="copy-btn" onclick="copyInstructions()">📋 Copiar Instruções</button>
+        </div>
+
+        <div id="log" class="log" style="display: none;"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://nrbsocawokmihvxfcpso.supabase.co";
+
+        function openSupabase() {
+            const sqlEditorUrl = `${SUPABASE_URL}/project/_/sql`;
+            window.open(sqlEditorUrl, '_blank');
+            
+            log('🌐 Abrindo SQL Editor do Supabase...', 'info');
+            log('', 'info');
+            log('📋 INSTRUÇÕES:', 'warning');
+            log('1. Cole o conteúdo do arquivo CREATE_EMAIL_TABLES.sql', 'info');
+            log('2. Clique em "Run" para executar', 'info');
+            log('3. Aguarde a confirmação de sucesso', 'success');
+            log('4. As tabelas estarão prontas para uso!', 'success');
+        }
+
+        function copyInstructions() {
+            const instructions = `
+# Instruções para Configurar Sistema de Email
+
+1. Acesse: ${SUPABASE_URL}/project/_/sql
+
+2. Copie todo o conteúdo do arquivo: CREATE_EMAIL_TABLES.sql
+
+3. Cole no SQL Editor do Supabase
+
+4. Clique em "Run" para executar
+
+5. Aguarde a confirmação
+
+6. Pronto! O sistema de email estará configurado ✅
+
+Tabelas criadas:
+- scheduled_emails (Agendamento de emails)
+- email_logs (Histórico de envios)
+- templates (Templates reutilizáveis)
+            `;
+
+            navigator.clipboard.writeText(instructions).then(() => {
+                alert('✅ Instruções copiadas!\n\nAgora:\n1. Abra o SQL Editor do Supabase\n2. Cole o conteúdo do arquivo CREATE_EMAIL_TABLES.sql\n3. Execute o SQL');
+            });
+        }
+
+        const logElement = document.getElementById('log');
+
+        function log(message, type = 'info') {
+            logElement.style.display = 'block';
+            const div = document.createElement('div');
+            div.className = type;
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            div.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(div);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+    </script>
+</body>
+</html>

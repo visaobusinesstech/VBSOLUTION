@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Visualizer - WhatsApp Baileys</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 16px;
+        }
+        
+        .qr-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 15px;
+            border: 2px dashed #e2e8f0;
+        }
+        
+        #qrcode {
+            display: inline-block;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        
+        .status.loading {
+            background: #fef5e7;
+            color: #d69e2e;
+            border: 1px solid #f6e05e;
+        }
+        
+        .status.success {
+            background: #f0fff4;
+            color: #38a169;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .status.error {
+            background: #fed7d7;
+            color: #e53e3e;
+            border: 1px solid #feb2b2;
+        }
+        
+        .info {
+            background: #edf2f7;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .info h3 {
+            margin: 0 0 10px 0;
+            color: #2d3748;
+            font-size: 18px;
+        }
+        
+        .info p {
+            margin: 5px 0;
+            color: #4a5568;
+            font-size: 14px;
+        }
+        
+        .button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.2s;
+        }
+        
+        .button:hover {
+            background: #3182ce;
+        }
+        
+        .button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+        
+        .whatsapp-info {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .whatsapp-info.show {
+            display: block;
+        }
+        
+        .whatsapp-id {
+            font-family: 'Courier New', monospace;
+            background: #2d3748;
+            color: #68d391;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">📱 WhatsApp QR Code</h1>
+            <p class="subtitle">Escaneie com seu WhatsApp para conectar</p>
+        </div>
+        
+        <div class="status loading" id="status">
+            🔄 Conectando ao servidor...
+        </div>
+        
+        <div class="qr-container">
+            <div id="qrcode"></div>
+        </div>
+        
+        <div class="whatsapp-info" id="whatsappInfo">
+            <h3>✅ Conectado com Sucesso!</h3>
+            <p><strong>WhatsApp ID:</strong></p>
+            <div class="whatsapp-id" id="whatsappId">Aguardando...</div>
+            <p><strong>Número:</strong> <span id="phoneNumber">Aguardando...</span></p>
+        </div>
+        
+        <div class="info">
+            <h3>📋 Instruções:</h3>
+            <p>1. Abra o WhatsApp no seu celular</p>
+            <p>2. Toque em "Menu" ou "Configurações"</p>
+            <p>3. Toque em "Dispositivos conectados"</p>
+            <p>4. Toque em "Conectar um dispositivo"</p>
+            <p>5. Escaneie o QR code acima</p>
+        </div>
+        
+        <button class="button" onclick="generateNewQR()" id="newQRBtn" disabled>
+            🔄 Gerar Novo QR Code
+        </button>
+    </div>
+
+    <script>
+        let currentConnectionId = null;
+        let checkInterval = null;
+        
+        async function generateQR() {
+            try {
+                updateStatus('🔄 Criando nova conexão...', 'loading');
+                
+                // Criar nova conexão
+                const response = await fetch('http://localhost:3000/api/baileys-simple/connections', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: 'Teste QR Visualizer',
+                        type: 'whatsapp_baileys'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentConnectionId = data.data.connectionId;
+                    updateStatus('✅ Conexão criada! Aguardando QR code...', 'success');
+                    checkForQR();
+                } else {
+                    updateStatus(`❌ Erro: ${data.error}`, 'error');
+                }
+                
+            } catch (error) {
+                updateStatus(`❌ Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkForQR() {
+            if (!currentConnectionId) return;
+            
+            try {
+                const response = await fetch(`http://localhost:3000/api/baileys-simple/connections/${currentConnectionId}/qr`);
+                const data = await response.json();
+                
+                if (data.success && data.data.qrCode) {
+                    updateStatus('📱 QR Code gerado! Escaneie com seu WhatsApp', 'success');
+                    displayQR(data.data.qrCode);
+                    startConnectionCheck();
+                } else {
+                    updateStatus('⏳ Aguardando QR code...', 'loading');
+                }
+                
+            } catch (error) {
+                updateStatus(`❌ Erro ao verificar QR: ${error.message}`, 'error');
+            }
+        }
+        
+        function displayQR(qrCode) {
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            
+            QRCode.toCanvas(qrContainer, qrCode, {
+                width: 300,
+                height: 300,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, function (error) {
+                if (error) {
+                    console.error('Erro ao gerar QR code:', error);
+                    qrContainer.innerHTML = '<p>Erro ao gerar QR code</p>';
+                }
+            });
+        }
+        
+        function startConnectionCheck() {
+            checkInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/baileys-simple/connections/${currentConnectionId}/qr`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.data.isConnected) {
+                        updateStatus('✅ Conectado! Capturando informações...', 'success');
+                        clearInterval(checkInterval);
+                        await getConnectionInfo();
+                    }
+                    
+                } catch (error) {
+                    console.error('Erro ao verificar conexão:', error);
+                }
+            }, 2000);
+        }
+        
+        async function getConnectionInfo() {
+            try {
+                const response = await fetch('http://localhost:3000/api/baileys-simple/connections');
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    const connection = data.data[0];
+                    
+                    if (connection.whatsappId) {
+                        const whatsappId = connection.whatsappId.replace('@s.whatsapp.net', '');
+                        const phoneNumber = connection.phoneNumber || whatsappId;
+                        
+                        document.getElementById('whatsappId').textContent = whatsappId;
+                        document.getElementById('phoneNumber').textContent = phoneNumber;
+                        document.getElementById('whatsappInfo').classList.add('show');
+                        
+                        updateStatus('🎉 WhatsApp ID capturado com sucesso!', 'success');
+                    } else {
+                        updateStatus('⚠️ Conectado, mas WhatsApp ID não capturado', 'loading');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Erro ao obter informações:', error);
+            }
+        }
+        
+        function updateStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function generateNewQR() {
+            if (checkInterval) {
+                clearInterval(checkInterval);
+            }
+            currentConnectionId = null;
+            document.getElementById('whatsappInfo').classList.remove('show');
+            document.getElementById('qrcode').innerHTML = '';
+            generateQR();
+        }
+        
+        // Iniciar automaticamente
+        generateQR();
+    </script>
+</body>
+</html>

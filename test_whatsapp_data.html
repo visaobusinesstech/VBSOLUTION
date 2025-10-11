@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste WhatsApp - VBSolutionCRM</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Teste de Dados WhatsApp</h1>
+    <button onclick="testConnection()">Testar Conexão</button>
+    <button onclick="fixRLS()">Corrigir RLS</button>
+    <button onclick="insertTestData()">Inserir Dados de Teste</button>
+    <div id="output"></div>
+
+    <script>
+        const SUPABASE_URL = "https://nrbsocawokmihvxfcpso.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnNvY2F3b2ttaWh2eGZjcHNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzQwNTMsImV4cCI6MjA3MjA1MDA1M30.3SxEVRNNBHhAXgJ7S2BMHm1QWq9kxYamuLjvZm0_OU0";
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        function log(message) {
+            const output = document.getElementById('output');
+            output.innerHTML += `<p>${new Date().toLocaleTimeString()}: ${message}</p>`;
+            console.log(message);
+        }
+        
+        async function testConnection() {
+            log("🔄 Testando conexão com Supabase...");
+            try {
+                const { data, error } = await supabase.from('whatsapp_atendimentos').select('count').limit(1);
+                if (error) {
+                    log(`❌ Erro na conexão: ${error.message}`);
+                } else {
+                    log("✅ Conexão com Supabase funcionando!");
+                }
+            } catch (err) {
+                log(`❌ Erro: ${err.message}`);
+            }
+        }
+        
+        async function fixRLS() {
+            log("🔄 Corrigindo políticas RLS...");
+            
+            const queries = [
+                "ALTER TABLE public.whatsapp_atendimentos ENABLE ROW LEVEL SECURITY;",
+                "ALTER TABLE public.whatsapp_mensagens ENABLE ROW LEVEL SECURITY;",
+                "DROP POLICY IF EXISTS \"whatsapp_atendimentos_policy\" ON public.whatsapp_atendimentos;",
+                "DROP POLICY IF EXISTS \"whatsapp_mensagens_policy\" ON public.whatsapp_mensagens;",
+                "CREATE POLICY \"whatsapp_atendimentos_policy\" ON public.whatsapp_atendimentos FOR ALL USING (true);",
+                "CREATE POLICY \"whatsapp_mensagens_policy\" ON public.whatsapp_mensagens FOR ALL USING (true);"
+            ];
+            
+            for (let i = 0; i < queries.length; i++) {
+                try {
+                    const { data, error } = await supabase.rpc('exec_sql', { query: queries[i] });
+                    if (error) {
+                        log(`❌ Erro na query ${i + 1}: ${error.message}`);
+                    } else {
+                        log(`✅ Query ${i + 1} executada com sucesso`);
+                    }
+                } catch (err) {
+                    log(`❌ Erro na query ${i + 1}: ${err.message}`);
+                }
+            }
+        }
+        
+        async function insertTestData() {
+            log("🔄 Inserindo dados de teste...");
+            
+            try {
+                // Inserir atendimento de teste
+                const { data: atendimento, error: atendimentoError } = await supabase
+                    .from('whatsapp_atendimentos')
+                    .insert({
+                        owner_id: '00000000-0000-0000-0000-000000000000', // ID temporário
+                        numero_cliente: '5511999999999',
+                        nome_cliente: 'Cliente Teste',
+                        status: 'aguardando',
+                        ultima_mensagem: 'Olá, como posso ajudar?',
+                        ultima_mensagem_at: new Date().toISOString()
+                    })
+                    .select()
+                    .single();
+                
+                if (atendimentoError) {
+                    log(`❌ Erro ao inserir atendimento: ${atendimentoError.message}`);
+                    return;
+                }
+                
+                log(`✅ Atendimento inserido: ${atendimento.id}`);
+                
+                // Inserir mensagem de teste
+                const { data: mensagem, error: mensagemError } = await supabase
+                    .from('whatsapp_mensagens')
+                    .insert({
+                        owner_id: '00000000-0000-0000-0000-000000000000',
+                        atendimento_id: atendimento.id,
+                        conteudo: 'Olá! Esta é uma mensagem de teste.',
+                        tipo: 'TEXTO',
+                        direcao: 'ENTRADA',
+                        timestamp: new Date().toISOString()
+                    })
+                    .select()
+                    .single();
+                
+                if (mensagemError) {
+                    log(`❌ Erro ao inserir mensagem: ${mensagemError.message}`);
+                } else {
+                    log(`✅ Mensagem inserida: ${mensagem.id}`);
+                }
+                
+            } catch (err) {
+                log(`❌ Erro geral: ${err.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

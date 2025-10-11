@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Conexão Supabase</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Teste de Conexão Supabase</h1>
+    <div id="status">Carregando...</div>
+    <div id="results"></div>
+
+    <script>
+        const SUPABASE_URL = "https://nrbsocawokmihvxfcpso.supabase.co";
+        const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnNvY2F3b2ttaWh2eGZjcHNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzQwNTMsImV4cCI6MjA3MjA1MDA1M30.3SxEVRNNBHhAXgJ7S2BMHm1QWq9kxYamuLjvZm0_OU0";
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+        async function testConnection() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                statusDiv.textContent = 'Testando conexão...';
+                
+                // Teste 1: Verificar se o cliente foi criado
+                resultsDiv.innerHTML += '<h3>1. Cliente Supabase:</h3>';
+                resultsDiv.innerHTML += `<p>✅ Cliente criado: ${supabase ? 'Sim' : 'Não'}</p>`;
+                
+                // Teste 2: Verificar tabelas disponíveis
+                resultsDiv.innerHTML += '<h3>2. Verificando tabelas:</h3>';
+                
+                // Teste 3: Verificar se a tabela companies existe
+                try {
+                    const { data: companiesData, error: companiesError } = await supabase
+                        .from('companies')
+                        .select('count')
+                        .limit(1);
+                    
+                    if (companiesError) {
+                        resultsDiv.innerHTML += `<p>❌ Erro ao acessar tabela companies: ${companiesError.message}</p>`;
+                        resultsDiv.innerHTML += `<p>Detalhes: ${JSON.stringify(companiesError, null, 2)}</p>`;
+                    } else {
+                        resultsDiv.innerHTML += `<p>✅ Tabela companies acessível</p>`;
+                    }
+                } catch (err) {
+                    resultsDiv.innerHTML += `<p>❌ Erro ao acessar companies: ${err.message}</p>`;
+                }
+                
+                // Teste 4: Verificar se a tabela profiles existe
+                try {
+                    const { data: profilesData, error: profilesError } = await supabase
+                        .from('profiles')
+                        .select('count')
+                        .limit(1);
+                    
+                    if (profilesError) {
+                        resultsDiv.innerHTML += `<p>❌ Erro ao acessar tabela profiles: ${profilesError.message}</p>`;
+                        resultsDiv.innerHTML += `<p>Detalhes: ${JSON.stringify(profilesError, null, 2)}</p>`;
+                    } else {
+                        resultsDiv.innerHTML += `<p>✅ Tabela profiles acessível</p>`;
+                    }
+                } catch (err) {
+                    resultsDiv.innerHTML += `<p>❌ Erro ao acessar profiles: ${err.message}</p>`;
+                }
+                
+                // Teste 5: Verificar estrutura da tabela companies
+                resultsDiv.innerHTML += '<h3>3. Estrutura da tabela companies:</h3>';
+                try {
+                    const { data: structureData, error: structureError } = await supabase
+                        .from('companies')
+                        .select('*')
+                        .limit(0);
+                    
+                    if (structureError) {
+                        resultsDiv.innerHTML += `<p>❌ Erro ao verificar estrutura: ${structureError.message}</p>`;
+                    } else {
+                        resultsDiv.innerHTML += `<p>✅ Estrutura verificada</p>`;
+                    }
+                } catch (err) {
+                    resultsDiv.innerHTML += `<p>❌ Erro ao verificar estrutura: ${err.message}</p>`;
+                }
+                
+                statusDiv.textContent = 'Teste concluído!';
+                
+            } catch (error) {
+                statusDiv.textContent = 'Erro no teste!';
+                resultsDiv.innerHTML += `<p>❌ Erro geral: ${error.message}</p>`;
+                console.error('Erro no teste:', error);
+            }
+        }
+
+        // Executar teste quando a página carregar
+        window.addEventListener('load', testConnection);
+    </script>
+</body>
+</html>

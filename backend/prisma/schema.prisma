@@ -1,0 +1,245 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model UserProfile {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  avatar_url  String?
+  company_id  String?
+  role        String   @default("user")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  // Relacionamentos
+  company     Company? @relation(fields: [company_id], references: [id])
+  activities_created Activity[] @relation("CreatedBy")
+  activities_responsible Activity[] @relation("ResponsibleFor")
+
+  @@map("user_profiles")
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  domain     String?
+  settings   String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  // Relacionamentos
+  users      UserProfile[]
+  activities Activity[]
+
+  @@map("companies")
+}
+
+model Activity {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  type            String    @default("task")
+  priority        String    @default("medium")
+  status          String    @default("pending")
+  due_date        DateTime?
+  start_date      DateTime?
+  end_date        DateTime?
+  responsible_id  String?
+  created_by      String
+  company_id      String?
+  project_id      String?
+  work_group      String?
+  department      String?
+  estimated_hours Float?
+  actual_hours    Float?
+  tags            String
+  attachments     String?
+  comments        String?
+  progress        Int       @default(0)
+  is_urgent       Boolean   @default(false)
+  is_public       Boolean   @default(false)
+  notes           String?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @default(now())
+
+  // Relacionamentos
+  responsible    UserProfile? @relation("ResponsibleFor", fields: [responsible_id], references: [id])
+  creator       UserProfile  @relation("CreatedBy", fields: [created_by], references: [id])
+  company       Company?     @relation(fields: [company_id], references: [id])
+
+  @@map("activities")
+}
+
+// Modelos existentes para WhatsApp (mantidos para compatibilidade)
+model Atendimento {
+  id            Int         @id @default(autoincrement())
+  numero        String
+  clienteNome   String?     
+  atendenteId   Int?
+  status        String @default("NOVO")
+  canal         String       @default("whatsapp")
+  dataInicio    DateTime     @default(now())
+  dataFim       DateTime?
+  mensagens     Mensagem[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([numero, status])
+  @@index([atendenteId])
+}
+
+model Mensagem {
+  id            Int       @id @default(autoincrement())
+  atendimentoId Int
+  remetente     String
+  tipo          String
+  conteudo      String?
+  midiaPath     String?
+  mimeType      String?
+  createdAt     DateTime  @default(now())
+  atendimento   Atendimento @relation(fields: [atendimentoId], references: [id], onDelete: Cascade)
+
+  @@index([atendimentoId, createdAt])
+}
+
+model OpcaoAtendimento {
+  id            Int    @id @default(autoincrement())
+  ordem         Int
+  titulo        String
+  atendenteId   Int
+  ativo         Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([ordem, ativo])
+}
+
+model ConfiguracaoAtendimento {
+  id             Int    @id @default(autoincrement())
+  mensagemPadrao String
+  opcoes         String
+  ativo          Boolean @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model WhatsAppSession {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  status    String   @default("disconnected")
+  qrCode    String?
+  lastError String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages WhatsAppMessage[]
+
+  @@index([name])
+  @@index([status])
+}
+
+model WhatsAppMessage {
+  id          String   @id @default(cuid())
+  sessionName String
+  from        String
+  to          String
+  type        String
+  content     String?
+  mediaPath   String?
+  timestamp   DateTime @default(now())
+  direction   String   @default("INBOUND")
+  rawData     String?
+
+  session WhatsAppSession @relation(fields: [sessionName], references: [name], onDelete: Cascade)
+
+  @@index([sessionName])
+  @@index([timestamp])
+  @@index([from])
+  @@index([to])
+}
+
+// Tabelas para histórico do WhatsApp Baileys
+model WhatsAppChat {
+  id            String   @id @default(cuid())
+  connectionId  String
+  chatId        String
+  name          String?
+  isGroup       Boolean  @default(false)
+  participants  String
+  unreadCount   Int      @default(0)
+  lastMessage   String?
+  timestamp     DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([connectionId, chatId])
+  @@index([connectionId])
+  @@index([timestamp])
+  @@map("whatsapp_chats")
+}
+
+model WhatsAppContact {
+  id            String   @id @default(cuid())
+  connectionId  String
+  contactId     String
+  name          String?
+  notify        String?
+  verifiedName  String?
+  imgUrl        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([connectionId, contactId])
+  @@index([connectionId])
+  @@map("whatsapp_contacts")
+}
+
+model WhatsAppMessageHistory {
+  id              String   @id @default(cuid())
+  connectionId    String
+  messageKey      String
+  remoteJid       String
+  fromMe          Boolean  @default(false)
+  messageId       String
+  message         String?
+  messageTimestamp DateTime
+  status          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([connectionId, messageKey])
+  @@index([connectionId])
+  @@index([remoteJid])
+  @@index([messageTimestamp])
+  @@map("whatsapp_messages")
+}
+
+model WhatsAppConnection {
+  id              String   @id @default(cuid())
+  connectionId    String   @unique
+  name            String
+  type            String   @default("whatsapp_baileys")
+  status          String   @default("disconnected")
+  description     String?
+  phoneNumber     String?
+  whatsappInfo    String?  // JSON string
+  qrCode          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastConnectedAt DateTime?
+
+  @@index([connectionId])
+  @@index([status])
+  @@map("whatsapp_connections")
+}
+
+

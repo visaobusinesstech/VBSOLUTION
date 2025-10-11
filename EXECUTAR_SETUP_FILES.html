@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup Sistema de Arquivos - VB Solution CRM</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 900px;
+      width: 100%;
+      padding: 40px;
+    }
+    h1 {
+      color: #2d3748;
+      font-size: 28px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .subtitle {
+      color: #718096;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    .button-group {
+      display: flex;
+      gap: 15px;
+      margin: 25px 0;
+    }
+    button {
+      flex: 1;
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    .log-container {
+      margin-top: 30px;
+      background: #1a202c;
+      border-radius: 10px;
+      padding: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .log-entry {
+      margin-bottom: 8px;
+      padding: 8px;
+      border-radius: 5px;
+    }
+    .log-entry.info { color: #63b3ed; }
+    .log-entry.success { color: #48bb78; background: rgba(72, 187, 120, 0.1); }
+    .log-entry.error { color: #fc8181; background: rgba(252, 129, 129, 0.1); }
+    .log-entry.warning { color: #f6ad55; }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 20px;
+      display: none;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+      display: none;
+    }
+    .stat-card {
+      background: #f7fafc;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🗄️ Setup do Sistema de Arquivos</h1>
+    <p class="subtitle">Configurar tabela files e storage bucket</p>
+
+    <div class="stats" id="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="created">0</div>
+        <div class="stat-label">Criados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="fixed">0</div>
+        <div class="stat-label">Corrigidos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="errors">0</div>
+        <div class="stat-label">Erros</div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="btn-primary" onclick="executeSetup()" id="executeBtn">
+        Executar Setup Completo
+      </button>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="log-container" id="logContainer">
+      <div class="log-entry info">Aguardando execução...</div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://nrbsocawokmihvxfcpso.supabase.co';
+    const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yYnNvY2F3b2ttaWh2eGZjcHNvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjQ3NDA1MywiZXhwIjoyMDcyMDUwMDUzfQ.w6EJDzQj1fffHJ4lYzOVDLydqhbhGOW5KtGBDjaHfPA';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+    let stats = { created: 0, fixed: 0, errors: 0 };
+
+    function log(message, type = 'info') {
+      const logContainer = document.getElementById('logContainer');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function updateStats() {
+      document.getElementById('stats').style.display = 'grid';
+      document.getElementById('created').textContent = stats.created;
+      document.getElementById('fixed').textContent = stats.fixed;
+      document.getElementById('errors').textContent = stats.errors;
+    }
+
+    function updateProgress(percent) {
+      const progressBar = document.getElementById('progressBar');
+      const progressFill = document.getElementById('progressFill');
+      progressBar.style.display = 'block';
+      progressFill.style.width = percent + '%';
+    }
+
+    async function execSQL(sql, description) {
+      try {
+        const {data, error} = await supabase.rpc('exec_sql', {query: sql});
+        
+        if (error) {
+          if (error.message && (error.message.includes('already exists') || error.code === '42P07')) {
+            log(`⚠️ ${description} já existe`, 'warning');
+            stats.fixed++;
+            return {success: true};
+          }
+          throw error;
+        }
+        
+        log(`✅ ${description}`, 'success');
+        stats.created++;
+        return {success: true};
+      } catch (error) {
+        log(`❌ ${description} - ERRO: ${error.message}`, 'error');
+        stats.errors++;
+        return {success: false, error};
+      }
+    }
+
+    async function executeSetup() {
+      const btn = document.getElementById('executeBtn');
+      btn.disabled = true;
+      log('🚀 Iniciando setup do sistema de arquivos...', 'info');
+      updateProgress(0);
+
+      try {
+        // 1. Criar tabela
+        log('📝 Criando tabela files...', 'info');
+        updateProgress(10);
+        
+        await execSQL(`
+          CREATE TABLE IF NOT EXISTS files (
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+            name TEXT NOT NULL,
+            path TEXT NOT NULL,
+            size BIGINT NOT NULL,
+            type TEXT NOT NULL,
+            folder TEXT DEFAULT '/',
+            tags TEXT[] DEFAULT '{}',
+            favorite BOOLEAN DEFAULT FALSE,
+            shared BOOLEAN DEFAULT FALSE,
+            private BOOLEAN DEFAULT FALSE,
+            description TEXT,
+            created_at TIMESTAMPTZ DEFAULT NOW(),
+            updated_at TIMESTAMPTZ DEFAULT NOW(),
+            viewed_at TIMESTAMPTZ
+          );
+        `, 'Tabela files');
+
+        updateProgress(20);
+
+        // 2. Adicionar coluna folder
+        await execSQL(`
+          DO $$ 
+          BEGIN
+              IF NOT EXISTS (
+                  SELECT 1 
+                  FROM information_schema.columns 
+                  WHERE table_name = 'files' 
+                  AND column_name = 'folder'
+              ) THEN
+                  ALTER TABLE files ADD COLUMN folder TEXT DEFAULT '/';
+              END IF;
+          END $$;
+        `, 'Coluna folder');
+
+        updateProgress(30);
+
+        // 3. Índices
+        log('📇 Criando índices...', 'info');
+        await execSQL('CREATE INDEX IF NOT EXISTS idx_files_owner_id ON files(owner_id);', 'Índice owner_id');
+        await execSQL('CREATE INDEX IF NOT EXISTS idx_files_folder ON files(folder);', 'Índice folder');
+        await execSQL('CREATE INDEX IF NOT EXISTS idx_files_favorite ON files(favorite);', 'Índice favorite');
+        await execSQL('CREATE INDEX IF NOT EXISTS idx_files_shared ON files(shared);', 'Índice shared');
+        await execSQL('CREATE INDEX IF NOT EXISTS idx_files_private ON files(private);', 'Índice private');
+        await execSQL('CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at DESC);', 'Índice created_at');
+        await execSQL('CREATE INDEX IF NOT EXISTS idx_files_viewed_at ON files(viewed_at DESC NULLS LAST);', 'Índice viewed_at');
+
+        updateProgress(50);
+
+        // 4. Funções e triggers
+        log('⚙️ Criando funções...', 'info');
+        
+        await execSQL(`
+          CREATE OR REPLACE FUNCTION update_files_updated_at()
+          RETURNS TRIGGER AS $$
+          BEGIN
+            NEW.updated_at = NOW();
+            RETURN NEW;
+          END;
+          $$ LANGUAGE plpgsql;
+        `, 'Função update_files_updated_at');
+
+        await execSQL('DROP TRIGGER IF EXISTS files_updated_at_trigger ON files;', 'Remover trigger antigo');
+        await execSQL(`
+          CREATE TRIGGER files_updated_at_trigger
+            BEFORE UPDATE ON files
+            FOR EACH ROW
+            EXECUTE FUNCTION update_files_updated_at();
+        `, 'Trigger files_updated_at');
+
+        updateProgress(60);
+
+        // 5. RLS
+        log('🔒 Configurando RLS...', 'info');
+        
+        await execSQL('ALTER TABLE files ENABLE ROW LEVEL SECURITY;', 'Ativar RLS');
+
+        // Policies
+        await execSQL('DROP POLICY IF EXISTS "users_view_own_files" ON files;', 'Drop policy 1');
+        await execSQL('CREATE POLICY "users_view_own_files" ON files FOR SELECT USING (owner_id = auth.uid());', 'Policy view own');
+
+        await execSQL('DROP POLICY IF EXISTS "users_view_shared_files" ON files;', 'Drop policy 2');
+        await execSQL('CREATE POLICY "users_view_shared_files" ON files FOR SELECT USING (shared = TRUE);', 'Policy view shared');
+
+        await execSQL('DROP POLICY IF EXISTS "users_insert_own_files" ON files;', 'Drop policy 3');
+        await execSQL('CREATE POLICY "users_insert_own_files" ON files FOR INSERT WITH CHECK (owner_id = auth.uid());', 'Policy insert');
+
+        await execSQL('DROP POLICY IF EXISTS "users_update_own_files" ON files;', 'Drop policy 4');
+        await execSQL('CREATE POLICY "users_update_own_files" ON files FOR UPDATE USING (owner_id = auth.uid()) WITH CHECK (owner_id = auth.uid());', 'Policy update');
+
+        await execSQL('DROP POLICY IF EXISTS "users_delete_own_files" ON files;', 'Drop policy 5');
+        await execSQL('CREATE POLICY "users_delete_own_files" ON files FOR DELETE USING (owner_id = auth.uid());', 'Policy delete');
+
+        updateProgress(75);
+
+        // 6. Funções auxiliares
+        await execSQL(`
+          CREATE OR REPLACE FUNCTION update_file_viewed_at(file_id UUID)
+          RETURNS VOID AS $$
+          BEGIN
+            UPDATE files
+            SET viewed_at = NOW()
+            WHERE id = file_id AND owner_id = auth.uid();
+          END;
+          $$ LANGUAGE plpgsql SECURITY DEFINER;
+        `, 'Função update_file_viewed_at');
+
+        await execSQL(`
+          CREATE OR REPLACE FUNCTION get_user_files_stats(user_id UUID)
+          RETURNS JSON AS $$
+          DECLARE
+            result JSON;
+          BEGIN
+            SELECT json_build_object(
+              'total_files', COUNT(*),
+              'total_size', COALESCE(SUM(size), 0),
+              'favorites_count', COUNT(*) FILTER (WHERE favorite = true),
+              'shared_count', COUNT(*) FILTER (WHERE shared = true),
+              'private_count', COUNT(*) FILTER (WHERE private = true)
+            ) INTO result
+            FROM files
+            WHERE owner_id = user_id;
+            
+            RETURN result;
+          END;
+          $$ LANGUAGE plpgsql SECURITY DEFINER;
+        `, 'Função get_user_files_stats');
+
+        updateProgress(85);
+
+        // 7. Bucket
+        log('🗃️ Criando bucket...', 'info');
+        
+        try {
+          const {data, error} = await supabase.storage.createBucket('files', {
+            public: false,
+            fileSizeLimit: 52428800
+          });
+
+          if (!error) {
+            log('✅ Bucket files criado!', 'success');
+            stats.created++;
+          } else if (error.message.includes('already exists')) {
+            log('⚠️ Bucket files já existe', 'warning');
+            stats.fixed++;
+          } else {
+            throw error;
+          }
+        } catch (error) {
+          log(`⚠️ Bucket: ${error.message}`, 'warning');
+        }
+
+        updateProgress(100);
+
+        updateStats();
+
+        log('', 'info');
+        log('🎉 SETUP CONCLUÍDO COM SUCESSO!', 'success');
+        log('', 'info');
+        log('✨ Sistema de arquivos pronto!', 'success');
+        log('   Acesse /files no seu CRM.', 'info');
+
+      } catch (error) {
+        log(`❌ Erro: ${error.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    log('👋 Bem-vindo ao setup!', 'info');
+    log('💡 Clique em "Executar Setup Completo"', 'info');
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,10 @@
+project_id = "mgvpuvjgzjeqhrkpdrel"
+
+[functions.wa-persist-message]
+verify_jwt = false
+
+[functions.wa-list-conversations]
+verify_jwt = false
+
+[functions.wa-list-messages]
+verify_jwt = false

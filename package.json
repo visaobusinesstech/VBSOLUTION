@@ -1,0 +1,45 @@
+{
+  "name": "vb-solution-crm",
+  "version": "1.0.0",
+  "description": "Sistema CRM completo da VBSolution",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "node start-universal.js start",
+    "dev:full": "node start-universal.js start",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:baileys": "cd backend && node simple-baileys-server.js",
+    "build": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "start": "cd frontend && npm run preview",
+    "start:backend": "cd backend && npm start",
+    "start:auto": "node auto-start-system.js start",
+    "start:universal": "node start-universal.js start",
+    "start:whatsapp": "node start-universal.js start",
+    "status": "node start-universal.js status",
+    "stop": "node start-universal.js stop",
+    "cleanup-ports": "node cleanup-ports.js",
+    "dev:clean": "npm run cleanup-ports && npm run dev"
+  },
+  "keywords": [
+    "crm",
+    "whatsapp",
+    "supabase",
+    "vb-solution"
+  ],
+  "author": "VBSolution",
+  "license": "MIT",
+  "dependencies": {
+    "@tanstack/react-query": "^5.85.9",
+    "baileys": "^6.7.19",
+    "dayjs": "^1.11.18",
+    "openai": "^5.21.0",
+    "socket.io-client": "^4.8.1",
+    "zustand": "^5.0.8"
+  }
+}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Delete Connection</title>
+</head>
+<body>
+    <h1>Test Delete Connection</h1>
+    <button onclick="testDelete()">Test Delete</button>
+    <button onclick="showConnections()">Show Connections</button>
+    <div id="output"></div>
+
+    <script>
+        function showConnections() {
+            const connections = JSON.parse(localStorage.getItem('whatsapp_connections') || '[]');
+            document.getElementById('output').innerHTML = '<pre>' + JSON.stringify(connections, null, 2) + '</pre>';
+        }
+
+        function testDelete() {
+            const connections = JSON.parse(localStorage.getItem('whatsapp_connections') || '[]');
+            console.log('Before delete:', connections);
+            
+            // Simulate delete
+            const updatedConnections = connections.filter(conn => conn.id !== 'test-id');
+            localStorage.setItem('whatsapp_connections', JSON.stringify(updatedConnections));
+            
+            console.log('After delete:', updatedConnections);
+            showConnections();
+        }
+
+        // Show initial connections
+        showConnections();
+    </script>
+</body>
+</html>
+

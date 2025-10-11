@@ -1,0 +1,32 @@
+-- Execute este SQL no Supabase Dashboard > SQL Editor
+
+-- PRIMEIRO: Deletar a tabela files se ela existir (para recriar do zero)
+DROP TABLE IF EXISTS files CASCADE;
+
+-- SEGUNDO: Criar a tabela files do zero com todas as colunas necessárias
+CREATE TABLE files (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  owner_id UUID NOT NULL REFERENCES auth.users(id),
+  name TEXT NOT NULL,
+  size BIGINT NOT NULL,
+  type TEXT NOT NULL,
+  file_content TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- TERCEIRO: Habilitar RLS
+ALTER TABLE files ENABLE ROW LEVEL SECURITY;
+
+-- QUARTO: Criar políticas RLS para segurança (apenas o dono vê seus arquivos)
+CREATE POLICY "Users can insert own files" ON files
+FOR INSERT WITH CHECK (auth.uid() = owner_id);
+
+CREATE POLICY "Users can view own files" ON files
+FOR SELECT USING (auth.uid() = owner_id);
+
+CREATE POLICY "Users can update own files" ON files
+FOR UPDATE USING (auth.uid() = owner_id);
+
+CREATE POLICY "Users can delete own files" ON files
+FOR DELETE USING (auth.uid() = owner_id);

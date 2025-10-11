@@ -1,0 +1,2088 @@
+/* Importar estilos de scrollbar personalizados */
+@import './styles/scrollbar.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Variáveis CSS para componentes UI */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222.2 84% 4.9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+  --radius: 0.5rem;
+  
+  /* Cores personalizáveis por empresa */
+  --sidebar-color: #dee2e3;
+  --topbar-color: #3F30F1;
+  --button-color: #4A5477;
+}
+
+/* Variáveis CSS para Modo Escuro - Inspirado no Opera GX */
+.dark {
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  --card: 217 33% 17%;
+  --card-foreground: 210 40% 98%;
+  --popover: 217 33% 17%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217 91% 60%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 217 33% 17%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217 33% 23%;
+  --input: 217 33% 23%;
+  --ring: 217 91% 60%;
+  
+  /* Cores personalizáveis para modo escuro */
+  --sidebar-color: #1a1f2e;
+  --topbar-color: #1a1a1a;
+  --button-color: #4A7EFF;
+}
+
+/* Estilos globais para Modo Escuro */
+.dark body {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+.dark html {
+  background-color: #000000 !important;
+}
+
+/* Remover regra global que estava forçando background em todos os elementos */
+
+/* Cards e elementos com background específico - usar preto como base */
+.dark .bg-white,
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200,
+.dark [class*="bg-gray"],
+.dark .card,
+.dark .modal,
+.dark .dropdown,
+.dark .popover,
+.dark .tooltip,
+.dark div[class*="rounded"],
+.dark [class*="border"] {
+  background-color: #000000 !important;
+}
+
+/* Regra geral: todos os elementos devem ter background transparente por padrão */
+.dark * {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Regra super agressiva para forçar transparência em todos os elementos */
+.dark *:not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-yellow"]):not([class*="bg-orange"]):not([class*="bg-gray"]):not(.bg-gray-50):not(.bg-gray-100):not(.bg-gray-200):not([class*="card"]):not(.modal):not(.dropdown):not(.popover):not(.tooltip):not([class*="topbar"]):not([class*="header"]):not([class*="navbar"]):not(.topbar):not(.bitrix-topbar) {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Regra mais agressiva para elementos específicos com fundos pretos indesejados */
+.dark div,
+.dark span,
+.dark p,
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
+.dark a,
+.dark button,
+.dark li,
+.dark ul,
+.dark ol,
+.dark td,
+.dark th,
+.dark tr,
+.dark table,
+.dark tbody,
+.dark thead,
+.dark tfoot {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Exceções: elementos que devem ter backgrounds específicos */
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200,
+.dark [class*="bg-gray"],
+.dark [class*="card"]:not([class*="kanban"]),
+.dark .modal,
+.dark .dropdown,
+.dark .popover,
+.dark .tooltip,
+.dark [class*="topbar"],
+.dark [class*="header"],
+.dark [class*="navbar"],
+.dark .topbar,
+.dark .bitrix-topbar,
+.dark [class*="bg-"]:not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-yellow"]):not([class*="bg-orange"]):not([class*="bg-gray"]) {
+  background-color: #1a1a1a !important;
+}
+
+.dark .bg-blue-50,
+.dark .bg-blue-100,
+.dark .bg-blue-200,
+.dark [class*="bg-blue"] {
+  background-color: #1E3A8A !important;
+}
+
+/* Blocos do Index com background cinza */
+.dark [class*="bg-"]:not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-yellow"]):not([class*="bg-orange"]) {
+  background-color: #1a1a1a !important;
+}
+
+/* Topbar com background cinza */
+.dark [class*="topbar"],
+.dark [class*="header"],
+.dark [class*="navbar"],
+.dark .topbar,
+.dark .bitrix-topbar {
+  background-color: #1a1a1a !important;
+}
+
+/* Blocos específicos do Index com background cinza */
+.dark [class*="card"]:not([class*="kanban"]),
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200,
+.dark [class*="recent"],
+.dark [class*="agenda"],
+.dark [class*="pending"],
+.dark [class*="progress"],
+.dark .index-card,
+.dark .dashboard-card,
+.dark div[class*="bg-"]:not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-yellow"]):not([class*="bg-orange"]):not([class*="bg-gray"]) {
+  background-color: #1a1a1a !important;
+}
+
+/* Garantir que elementos dentro dos blocos do Index não tenham background preto */
+.dark [class*="card"] *,
+.dark .bg-gray-50 *,
+.dark .bg-gray-100 *,
+.dark .bg-gray-200 *,
+.dark [class*="recent"] *,
+.dark [class*="agenda"] *,
+.dark [class*="pending"] *,
+.dark [class*="progress"] *,
+.dark .index-card *,
+.dark .dashboard-card *,
+.dark [class*="card"] div,
+.dark [class*="card"] span,
+.dark [class*="card"] p,
+.dark [class*="card"] h1,
+.dark [class*="card"] h2,
+.dark [class*="card"] h3,
+.dark [class*="card"] h4,
+.dark [class*="card"] h5,
+.dark [class*="card"] h6,
+.dark [class*="card"] a,
+.dark [class*="card"] button,
+.dark [class*="card"] li {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Regras específicas para remover fundos pretos de elementos inline e de texto */
+.dark [class*="inline"],
+.dark [class*="text-"],
+.dark [class*="font-"],
+.dark .inline-block,
+.dark .inline-flex,
+.dark .block,
+.dark .flex,
+.dark .grid,
+.dark [style*="display: inline"],
+.dark [style*="display: inline-block"],
+.dark [style*="display: inline-flex"] {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Regras específicas para elementos com classes Tailwind que podem ter backgrounds */
+.dark [class*="px-"],
+.dark [class*="py-"],
+.dark [class*="p-"],
+.dark [class*="m-"],
+.dark [class*="mx-"],
+.dark [class*="my-"],
+.dark [class*="mb-"],
+.dark [class*="mt-"],
+.dark [class*="ml-"],
+.dark [class*="mr-"],
+.dark [class*="w-"],
+.dark [class*="h-"],
+.dark [class*="min-"],
+.dark [class*="max-"] {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Exceção: botões não devem ter fundo azul escuro por padrão */
+.dark button:not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]),
+.dark a:not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]) {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Regras específicas para botões e links da sidebar */
+.dark [class*="sidebar"] a,
+.dark [class*="sidebar"] button,
+.dark .bitrix-sidebar a,
+.dark .bitrix-sidebar button,
+.dark nav a,
+.dark nav button {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Remover qualquer background de hover padrão */
+.dark [class*="sidebar"] a:hover,
+.dark [class*="sidebar"] button:hover,
+.dark .bitrix-sidebar a:hover,
+.dark .bitrix-sidebar button:hover,
+.dark nav a:hover,
+.dark nav button:hover {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Garantir que textos e ícones não tenham background */
+.dark span,
+.dark p,
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
+.dark div[class*="text"],
+.dark svg,
+.dark i,
+.dark .icon,
+.dark [class*="text-"],
+.dark [class*="font-"],
+.dark .font-medium,
+.dark .font-semibold,
+.dark .font-bold,
+.dark button,
+.dark a,
+.dark div,
+.dark section,
+.dark article,
+.dark header,
+.dark footer,
+.dark nav,
+.dark main,
+.dark aside,
+.dark figure,
+.dark figcaption,
+.dark label,
+.dark input,
+.dark textarea,
+.dark select,
+.dark option {
+  background-color: transparent !important;
+}
+
+/* Manter cores específicas dos ícones de prioridade e status no Index */
+.dark .bg-red-500,
+.dark div[class*="bg-red-500"] {
+  background-color: #EF4444 !important;
+}
+
+.dark .bg-orange-500,
+.dark div[class*="bg-orange-500"] {
+  background-color: #F97316 !important;
+}
+
+.dark .bg-yellow-500,
+.dark div[class*="bg-yellow-500"] {
+  background-color: #EAB308 !important;
+}
+
+.dark .bg-gray-400,
+.dark div[class*="bg-gray-400"] {
+  background-color: #9CA3AF !important;
+}
+
+.dark .bg-green-500,
+.dark div[class*="bg-green-500"] {
+  background-color: #22C55E !important;
+}
+
+.dark .bg-blue-500,
+.dark div[class*="bg-blue-500"] {
+  background-color: #3B82F6 !important;
+}
+
+/* Manter cores de texto dos ícones */
+.dark .text-green-500 {
+  color: #22C55E !important;
+}
+
+.dark .text-blue-500 {
+  color: #3B82F6 !important;
+}
+
+.dark .text-red-500 {
+  color: #EF4444 !important;
+}
+
+.dark .text-white {
+  color: #FFFFFF !important;
+}
+
+/* Remover backgrounds de elementos específicos que podem ter fundos indesejados */
+.dark .inline-flex,
+.dark .flex,
+.dark .items-center,
+.dark .justify-center,
+.dark .gap-2,
+.dark .gap-3,
+.dark .gap-4,
+.dark .space-x-2,
+.dark .space-x-3,
+.dark .space-x-4,
+.dark .space-y-2,
+.dark .space-y-3,
+.dark .space-y-4,
+.dark .grid,
+.dark .grid-cols-1,
+.dark .grid-cols-2,
+.dark .grid-cols-3,
+.dark .grid-cols-4,
+.dark .col-span-1,
+.dark .col-span-2,
+.dark .row-span-1,
+.dark .row-span-2,
+.dark [class*="inline"],
+.dark [class*="text-"],
+.dark [class*="font-"],
+.dark .inline-block,
+.dark .block,
+.dark [style*="display: inline"],
+.dark [style*="display: inline-block"],
+.dark [style*="display: inline-flex"] {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Regras específicas para elementos com classes Tailwind que podem ter backgrounds */
+.dark [class*="px-"],
+.dark [class*="py-"],
+.dark [class*="p-"],
+.dark [class*="m-"],
+.dark [class*="mx-"],
+.dark [class*="my-"],
+.dark [class*="mb-"],
+.dark [class*="mt-"],
+.dark [class*="ml-"],
+.dark [class*="mr-"],
+.dark [class*="w-"],
+.dark [class*="h-"],
+.dark [class*="min-"],
+.dark [class*="max-"] {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Garantir que botões da sidebar não tenham fundos indesejados */
+.dark nav a,
+.dark nav button,
+.dark [class*="sidebar"] a,
+.dark [class*="sidebar"] button,
+.dark .bitrix-sidebar a,
+.dark .bitrix-sidebar button {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Manter apenas o background azul para itens ativos/selecionados */
+.dark nav a[class*="bg-blue-2"],
+.dark nav button[class*="bg-blue-2"],
+.dark [class*="sidebar"] a[class*="bg-blue"],
+.dark [class*="sidebar"] button[class*="bg-blue"],
+.dark .bitrix-sidebar a[class*="bg-blue"],
+.dark .bitrix-sidebar button[class*="bg-blue"] {
+  background-color: #293548 !important;
+}
+
+/* Garantir que elementos hover da sidebar sejam transparentes */
+.dark nav a:hover,
+.dark nav button:hover,
+.dark [class*="sidebar"] a:hover,
+.dark [class*="sidebar"] button:hover,
+.dark .bitrix-sidebar a:hover,
+.dark .bitrix-sidebar button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Regra abrangente para todos os elementos da sidebar */
+.dark [class*="sidebar"] *,
+.dark .bitrix-sidebar *,
+.dark nav * {
+  background-color: transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Exceção: apenas itens ativos/selecionados podem ter background */
+.dark [class*="sidebar"] a[class*="bg-blue"],
+.dark [class*="sidebar"] button[class*="bg-blue"],
+.dark .bitrix-sidebar a[class*="bg-blue"],
+.dark .bitrix-sidebar button[class*="bg-blue"],
+.dark nav a[class*="bg-blue"],
+.dark nav button[class*="bg-blue"] {
+  background-color: #293548 !important;
+}
+
+/* Remover fundo preto do botão de calendário na topbar */
+.dark button[title*="Calendário"],
+.dark button[title*="calendário"],
+.dark button.p-2.rounded-lg,
+.dark button[class*="p-2"][class*="rounded-lg"] {
+  background-color: transparent !important;
+}
+
+.dark button[title*="Calendário"]:hover,
+.dark button[title*="calendário"]:hover,
+.dark button.p-2.rounded-lg:hover,
+.dark button[class*="p-2"][class*="rounded-lg"]:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Garantir que o SVG do calendário também não tenha fundo */
+.dark button svg,
+.dark button svg.h-4 {
+  background-color: transparent !important;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Sombra de relevo personalizada para sidebar */
+.sidebar-shadow {
+  box-shadow: 
+    4px 0 20px rgba(0, 0, 0, 0.08),
+    2px 0 8px rgba(0, 0, 0, 0.04),
+    inset -1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Sombra de relevo mais pronunciada */
+.sidebar-shadow-elevated {
+  box-shadow: 
+    6px 0 25px rgba(0, 0, 0, 0.12),
+    3px 0 12px rgba(0, 0, 0, 0.06),
+    inset -1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Sombra de relevo sutil */
+.sidebar-shadow-subtle {
+  box-shadow: 
+    2px 0 12px rgba(0, 0, 0, 0.06),
+    1px 0 6px rgba(0, 0, 0, 0.03);
+}
+
+/* Sombra de relevo com borda interna */
+.sidebar-shadow-inset {
+  box-shadow: 
+    4px 0 20px rgba(0, 0, 0, 0.08),
+    inset -1px 0 0 rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Transição suave para sombras */
+.sidebar-shadow-transition {
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+/* Hover effect para sidebar */
+.sidebar-shadow:hover {
+  box-shadow: 
+    6px 0 25px rgba(0, 0, 0, 0.12),
+    3px 0 12px rgba(0, 0, 0, 0.06),
+    inset -1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Estilos para dropdowns da Topbar */
+.topbar-dropdown {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  z-index: 1000 !important;
+}
+
+.topbar-dropdown-item {
+  background-color: white !important;
+  color: #374151 !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.topbar-dropdown-item:hover {
+  background-color: #f9fafb !important;
+}
+
+.topbar-dropdown-item:focus {
+  background-color: #f3f4f6 !important;
+  outline: none !important;
+}
+
+@layer base {
+  html {
+    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  }
+  
+  body {
+    background-color: #F8FAFC;
+    color: #111827;
+    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  }
+}
+
+@layer components {
+  /* Estilos específicos para a página de atividades - idênticos à referência */
+  .activities-page {
+    background-color: #F8FAFC;
+    min-height: 100vh;
+  }
+
+  .activities-header {
+    background-color: white;
+    border-bottom: 1px solid #E5E7EB;
+    height: 48px;
+    padding: 0 24px;
+    margin-bottom: 24px;
+  }
+
+  .activities-tab-active {
+    background-color: #2B6CB0;
+    color: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .activities-tab-inactive {
+    color: #6B7280;
+  }
+
+  .activities-tab-inactive:hover {
+    background-color: #F3F4F6;
+    color: #374151;
+  }
+
+  .activities-search {
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    padding: 8px 12px 8px 40px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .activities-search:focus {
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 1px #3B82F6;
+  }
+
+  .activities-select {
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    height: 32px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: white;
+  }
+
+  .activities-button {
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    height: 32px;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: white;
+    transition: all 0.2s ease;
+  }
+
+  .activities-button:hover {
+    background-color: #F3F4F6;
+  }
+
+  .activities-kanban-column {
+    min-width: 280px;
+    background-color: #F8FAFC;
+  }
+
+  .activities-kanban-header {
+    color: #6B7280;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .activities-kanban-count {
+    background-color: #F3F4F6;
+    color: #6B7280;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .activities-card {
+    background-color: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .activities-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .activities-card-title {
+    color: #111827;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+
+  .activities-card-description {
+    color: #6B7280;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .activities-priority-badge {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    height: 20px;
+    padding: 0 8px;
+    border-radius: 4px;
+  }
+
+  .activities-priority-urgent {
+    background-color: #FEE2E2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+  }
+
+  .activities-priority-high {
+    background-color: #FEF3C7;
+    color: #D97706;
+    border: 1px solid #FDE68A;
+  }
+
+  .activities-priority-medium {
+    background-color: #DBEAFE;
+    color: #2563EB;
+    border: 1px solid #BFDBFE;
+  }
+
+  .activities-priority-low {
+    background-color: #D1FAE5;
+    color: #059669;
+    border: 1px solid #A7F3D0;
+  }
+
+  .activities-tag-badge {
+    background-color: #F3F4F6;
+    color: #6B7280;
+    font-size: 12px;
+    height: 20px;
+    padding: 0 8px;
+    border-radius: 4px;
+  }
+
+  .activities-avatar {
+    width: 24px;
+    height: 24px;
+    background-color: #E5E7EB;
+    color: #6B7280;
+    font-size: 12px;
+  }
+
+  .activities-employee-name {
+    color: #6B7280;
+    font-size: 12px;
+  }
+
+  .activities-date {
+    color: #6B7280;
+    font-size: 12px;
+  }
+
+  .activities-new-task-button {
+    width: 100%;
+    height: 48px;
+    border: 2px dashed #D1D5DB;
+    color: #6B7280;
+    background-color: #F9FAFB;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+  }
+
+  .activities-new-task-button:hover {
+    color: #374151;
+    border-color: #9CA3AF;
+  }
+
+  .activities-floating-button {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    background-color: #0C1A3B;
+    border-radius: 50%;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    z-index: 50;
+  }
+
+  .activities-floating-button:hover {
+    background-color: #0F2A5C;
+    transform: scale(1.05);
+  }
+
+  /* Estilos específicos para o Kanban Board da imagem */
+  .kanban-board {
+    background-color: #F8FAFC;
+  }
+
+  .kanban-column {
+    min-width: 280px;
+    background-color: #F8FAFC;
+  }
+
+  .kanban-column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .kanban-column-title {
+    color: #6B7280;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .kanban-column-count {
+    background-color: #F3F4F6;
+    color: #6B7280;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .kanban-task-card {
+    background-color: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .kanban-task-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .kanban-task-title {
+    color: #111827;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+
+  .kanban-task-subtitle {
+    color: #6B7280;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .kanban-priority-badge {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    height: 20px;
+    padding: 0 8px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .kanban-priority-urgent {
+    background-color: #FEE2E2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+  }
+
+  .kanban-priority-medium {
+    background-color: #DBEAFE;
+    color: #2563EB;
+    border: 1px solid #BFDBFE;
+  }
+
+  .kanban-task-date {
+    color: #6B7280;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .kanban-new-task-button {
+    width: 100%;
+    height: 48px;
+    border: 2px dashed #D1D5DB;
+    color: #6B7280;
+    background-color: #F9FAFB;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .kanban-new-task-button:hover {
+    color: #374151;
+    border-color: #9CA3AF;
+    background-color: #F3F4F6;
+  }
+
+  /* Estilos específicos para o layout exato da imagem */
+  .kanban-layout {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .kanban-layout-bottom {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  .kanban-layout-bottom .col-span-1:nth-child(1),
+  .kanban-layout-bottom .col-span-1:nth-child(2) {
+    visibility: hidden;
+  }
+
+  .kanban-layout-bottom .col-span-1:nth-child(3) {
+    grid-column: 3;
+  }
+
+  .kanban-layout-bottom .col-span-1:nth-child(4) {
+    grid-column: 4;
+  }
+
+  /* Estilos para os botões de navegação entre páginas */
+  .navigation-buttons {
+    background-color: white;
+    border-bottom: 1px solid #E5E7EB;
+    padding: 12px 24px;
+    margin-bottom: 24px;
+  }
+
+  .navigation-buttons-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .navigation-button {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+  }
+
+  .navigation-button-active {
+    background-color: #2563EB;
+    color: white;
+    border: none;
+  }
+
+  .navigation-button-active:hover {
+    background-color: #1D4ED8;
+  }
+
+  .navigation-button-inactive {
+    background-color: transparent;
+    color: #6B7280;
+    border: none;
+  }
+
+  .navigation-button-inactive:hover {
+    color: #374151;
+    background-color: #F3F4F6;
+  }
+}
+
+/* Scrollbar personalizada */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Garantir que apenas uma seta seja exibida em todos os selects */
+[data-radix-select-trigger] svg:not([data-radix-select-icon]) {
+  display: none !important;
+}
+
+[data-radix-select-trigger] [data-radix-select-icon] {
+  position: absolute !important;
+  right: 8px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+}
+
+/* CSS específico para corrigir o problema das duas setas */
+.select-trigger-fixed {
+  position: relative !important;
+}
+
+.select-trigger-fixed .select-chevron-icon {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+}
+
+.select-trigger-fixed svg:not(.select-chevron-icon) {
+  display: none !important;
+}
+
+/* Correção específica para selects das activities */
+.activities-select {
+  position: relative !important;
+}
+
+.activities-select svg:not([data-radix-select-icon]) {
+  display: none !important;
+}
+
+.activities-select [data-radix-select-icon] {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+}
+
+/* Botões de filtro mais compactos */
+.compact-filter-button {
+  min-height: 24px !important;
+  height: 24px !important;
+  padding: 2px 6px !important;
+}
+
+/* Selects de filtro mais compactos */
+.compact-filter-select {
+  min-height: 24px !important;
+  height: 24px !important;
+  padding: 2px 6px !important;
+}
+
+/* Inputs de filtro mais compactos */
+.compact-filter-input {
+  min-height: 24px !important;
+  height: 24px !important;
+  padding: 2px 6px !important;
+}
+
+/* Estilos específicos para a tela de Planejador */
+.planejador-page {
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Estilos para o ClickUp Kanban */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.planejador-page .summary-row {
+  margin-bottom: 2rem;
+}
+
+.planejador-page .sprints-section {
+  margin-bottom: 2rem;
+}
+
+.planejador-page .kanban-section {
+  margin-bottom: 2rem;
+}
+
+/* Responsividade para a tela de planejador */
+@media (max-width: 1279px) {
+  .planejador-page .summary-row .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .planejador-page .sprints-section .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .planejador-page .kanban-section .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1023px) {
+  .planejador-page .summary-row .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .planejador-page .sprints-section .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .planejador-page .kanban-section .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .planejador-page {
+    padding: 1rem;
+  }
+}
+
+/* Estilos responsivos para Activities */
+.activities-page {
+  overflow-x: hidden;
+}
+
+/* Container do Kanban horizontal responsivo */
+.activities-kanban-container {
+  display: flex;
+  gap: 0.75rem; /* Gap otimizado entre colunas */
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  box-sizing: border-box;
+}
+
+/* Garantir que as colunas do Kanban sejam responsivas */
+.kanban-column {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+
+.kanban-column:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.kanban-column .kanban-content {
+  flex: 1;
+  min-height: 200px;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+/* Garantir que o texto não quebre o layout */
+.kanban-column h3,
+.kanban-column h4,
+.kanban-column p {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Responsividade para telas pequenas */
+@media (max-width: 1024px) {
+  .activities-kanban-container {
+    gap: 12px;
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+  
+  .kanban-column {
+    min-width: 280px;
+    width: 280px;
+    flex-shrink: 0;
+  }
+}
+
+/* Responsividade para telas grandes */
+@media (min-width: 1024px) {
+  .activities-kanban-container {
+    gap: 12px;
+    overflow-x: hidden; /* Sem scroll em telas grandes - colunas se ajustam */
+  }
+  
+  .kanban-column {
+    flex: 1;
+    max-width: none;
+    flex-shrink: 1;
+  }
+}
+
+/* Responsividade adicional para telas muito pequenas */
+@media (max-width: 480px) {
+  .planejador-page .summary-row .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .planejador-page .sprints-section .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .planejador-page .kanban-section .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .planejador-page .sprints-section .flex {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .planejador-page .sprints-section .flex > div {
+    width: 100%;
+  }
+}
+
+/* Estilos para os cards de tarefa no Kanban */
+.planejador-page .kanban-section .bg-gray-50 {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Otimização para caber na tela sem scroll */
+.activities-page {
+  height: calc(100vh - 120px); /* Altura total menos header */
+  overflow: hidden; /* Remove scroll vertical */
+}
+
+/* Background azul escuro para todas as páginas no modo escuro */
+.dark .activities-page,
+.dark .planejador-page,
+.dark [class*="page"],
+.dark div,
+.dark section,
+.dark article,
+.dark .container,
+.dark .content,
+.dark .wrapper,
+.dark .dashboard,
+.dark .main-container {
+  background-color: #000000 !important;
+}
+
+/* Forçar background azul escuro em elementos específicos */
+.dark .p-6,
+.dark [class*="p-"],
+.dark .space-y-6,
+.dark .grid,
+.dark .flex,
+.dark div[class*="bg-"],
+.dark section,
+.dark article,
+.dark .rounded-lg,
+.dark .rounded-md,
+.dark .rounded-xl,
+.dark [class*="rounded"] {
+  background-color: #000000 !important;
+}
+
+.activities-page .kanban-container {
+  max-height: calc(100vh - 200px); /* Altura máxima para caber na tela */
+}
+
+/* Layout otimizado para sidebar colapsado */
+@media (max-width: 1279px) {
+  .activities-page {
+    padding-left: 0.25rem; /* Padding mínimo no sidebar colapsado */
+    padding-right: 0.25rem;
+  }
+  
+  #activities-kanban-container {
+    margin: 0; /* Remove margem para ocupar toda a largura */
+    width: calc(100vw - 80px - 0.5rem) !important; /* Força largura total com padding mínimo */
+  }
+  
+  /* Ajustar alinhamento para ficar embaixo do primeiro botão de navegação */
+  .activities-page .kanban-container {
+    margin-left: 0;
+    padding-left: 0;
+  }
+  
+  /* Aumentar altura máxima no sidebar colapsado */
+  .activities-page .kanban-container {
+    max-height: calc(100vh - 150px) !important;
+  }
+}
+
+/* Scrollbars customizadas para o Kanban no modo escuro */
+.dark #activities-kanban-container {
+  scrollbar-width: thin;
+  scrollbar-color: #4A7EFF #000000;
+}
+
+.dark #activities-kanban-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dark #activities-kanban-container::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+.dark #activities-kanban-container::-webkit-scrollbar-thumb {
+  background: #4A7EFF;
+  border-radius: 3px;
+}
+
+.dark #activities-kanban-container::-webkit-scrollbar-thumb:hover {
+  background: #3B6BFF;
+}
+
+/* Barra de rolagem customizada do sistema */
+.custom-scrollbar-system {
+  position: relative;
+}
+
+.custom-scrollbar-system .scroll-track {
+  background: #E5E7EB;
+  border-radius: 4px;
+  height: 8px;
+  position: relative;
+  cursor: pointer;
+}
+
+.custom-scrollbar-system .scroll-thumb {
+  background: #3B82F6;
+  border-radius: 4px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.custom-scrollbar-system .scroll-thumb:hover {
+  background: #2563EB;
+}
+
+/* Responsividade para diferentes tamanhos de sidebar */
+@media (min-width: 1280px) {
+  /* Sidebar expandido - blocos compactos */
+  .kanban-column {
+    min-width: 240px;
+  }
+}
+
+.planejador-page .kanban-section .bg-gray-50:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Estilos para os botões de nova tarefa */
+.planejador-page .kanban-section button[class*="border-dashed"] {
+  transition: all 0.2s ease-in-out;
+}
+
+.planejador-page .kanban-section button[class*="border-dashed"]:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+/* Estilos para os badges de prioridade */
+.planejador-page .bg-red-100 {
+  background-color: #fee2e2 !important;
+}
+
+.planejador-page .text-red-800 {
+  color: #b91c1c !important;
+}
+
+.planejador-page .bg-yellow-100 {
+  background-color: #fef3c7 !important;
+}
+
+.planejador-page .text-yellow-800 {
+  color: #b45309 !important;
+}
+
+.planejador-page .bg-blue-100 {
+  background-color: #eef2ff !important;
+}
+
+.planejador-page .text-blue-800 {
+  color: #4f46e5 !important;
+}
+
+/* Animação para as ondas do player de áudio */
+@keyframes waveform {
+  0% {
+    height: 8px;
+  }
+  100% {
+    height: 28px;
+  }
+}
+
+/* Esconder scrollbar para pipeline arrastável */
+.pipeline-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.pipeline-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ============================================
+   ESTILOS PARA MODO ESCURO 
+   ============================================ */
+
+/* Background e containers principais */
+.dark #root,
+.dark main,
+.dark .main-content {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
+/* Cards e containers - todos com azul escuro da topbar */
+.dark .bg-white {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+.dark [class*="bg-gray-50"],
+.dark .bg-gray-50 {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+.dark [class*="bg-gray-100"],
+.dark .bg-gray-100 {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+.dark [class*="bg-gray-200"],
+.dark .bg-gray-200 {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+/* Textos - TODOS BRANCOS no modo escuro */
+.dark [class*="text-gray-900"],
+.dark .text-gray-900 {
+  color: #FFFFFF !important;
+}
+
+.dark [class*="text-gray-800"],
+.dark .text-gray-800 {
+  color: #FFFFFF !important;
+}
+
+.dark [class*="text-gray-700"],
+.dark .text-gray-700 {
+  color: #FFFFFF !important;
+}
+
+.dark [class*="text-gray-600"],
+.dark .text-gray-600 {
+  color: #FFFFFF !important;
+}
+
+.dark [class*="text-gray-500"],
+.dark .text-gray-500 {
+  color: #FFFFFF !important;
+}
+
+.dark [class*="text-gray-400"],
+.dark .text-gray-400 {
+  color: #FFFFFF !important;
+}
+
+/* Borders */
+.dark [class*="border-gray"],
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: #2d3748 !important;
+}
+
+.dark .border {
+  border-color: #2d3748 !important;
+}
+
+/* Inputs e selects */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+  color: #FFFFFF !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #4A7EFF !important;
+  ring-color: #4A7EFF !important;
+}
+
+/* Botões */
+.dark button:not([class*="bg-blue"]):not([class*="bg-red"]):not([class*="bg-green"]) {
+  color: #FFFFFF;
+}
+
+.dark button[class*="bg-white"] {
+  background-color: #1e293b !important;
+  color: #FFFFFF !important;
+  border-color: #2d3748 !important;
+}
+
+.dark button[class*="bg-white"]:hover {
+  background-color: #293548 !important;
+}
+
+/* Hover states */
+.dark [class*="hover:bg-gray-50"]:hover,
+.dark .hover\:bg-gray-50:hover {
+  background-color: #293548 !important;
+}
+
+.dark [class*="hover:bg-gray-100"]:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: #334155 !important;
+}
+
+/* Dropdowns e menus */
+.dark .topbar-dropdown {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+}
+
+.dark .topbar-dropdown-item {
+  background-color: #1e293b !important;
+  color: #FFFFFF !important;
+}
+
+.dark .topbar-dropdown-item:hover {
+  background-color: #293548 !important;
+}
+
+/* Activities page - modo escuro */
+.dark .activities-page {
+  background-color: #000000 !important;
+}
+
+.dark .activities-header {
+  background-color: #000000 !important;
+  border-color: #2d3748 !important;
+}
+
+.dark .activities-card {
+  background-color: #000000 !important;
+  border-color: #2d3748 !important;
+}
+
+.dark .activities-card:hover {
+  background-color: #293548 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.dark .activities-card-title {
+  color: #FFFFFF !important;
+}
+
+.dark .activities-card-description {
+  color: #FFFFFF !important;
+}
+
+.dark .activities-kanban-column {
+  background-color: #000000 !important;
+}
+
+.dark .activities-new-task-button {
+  background-color: #1a2332 !important;
+  border-color: #2d3748 !important;
+  color: #FFFFFF !important;
+}
+
+.dark .activities-new-task-button:hover {
+  background-color: #1e293b !important;
+  border-color: #4a5568 !important;
+  color: #FFFFFF !important;
+}
+
+/* Kanban Board */
+.dark .kanban-board {
+  background-color: #000000 !important;
+}
+
+.dark .kanban-column {
+  background-color: #000000 !important;
+}
+
+.dark .kanban-task-card {
+  background-color: #000000 !important;
+  border-color: #2d3748 !important;
+}
+
+.dark .kanban-task-card:hover {
+  background-color: #293548 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.dark .kanban-task-title {
+  color: #FFFFFF !important;
+}
+
+.dark .kanban-task-subtitle {
+  color: #FFFFFF !important;
+}
+
+/* Badges de prioridade - manter cores originais em modo dark */
+.dark .activities-priority-urgent,
+.dark .kanban-priority-urgent {
+  background-color: #FEE2E2 !important;
+  color: #DC2626 !important;
+  border-color: #FECACA !important;
+}
+
+.dark .activities-priority-high {
+  background-color: #FEF3C7 !important;
+  color: #D97706 !important;
+  border-color: #FDE68A !important;
+}
+
+.dark .activities-priority-medium,
+.dark .kanban-priority-medium {
+  background-color: #DBEAFE !important;
+  color: #2563EB !important;
+  border-color: #BFDBFE !important;
+}
+
+.dark .activities-priority-low {
+  background-color: #D1FAE5 !important;
+  color: #059669 !important;
+  border-color: #A7F3D0 !important;
+}
+
+/* Manter cores específicas dos blocos do Kanban - mas com azul escuro de fundo */
+.dark .kanban-task-card[data-priority="urgent"],
+.dark .kanban-task-card[data-priority="high"] {
+  background-color: #000000 !important;
+  border-left: 4px solid #DC2626 !important;
+}
+
+.dark .kanban-task-card[data-priority="medium"] {
+  background-color: #000000 !important;
+  border-left: 4px solid #2563EB !important;
+}
+
+.dark .kanban-task-card[data-priority="low"] {
+  background-color: #000000 !important;
+  border-left: 4px solid #059669 !important;
+}
+
+/* Tables */
+.dark table {
+  color: #FFFFFF;
+}
+
+.dark thead {
+  background-color: #1e293b !important;
+  color: #FFFFFF !important;
+}
+
+.dark tbody tr {
+  border-color: #2d3748 !important;
+}
+
+.dark tbody tr:hover {
+  background-color: #1e293b !important;
+}
+
+/* Modals e dialogs */
+.dark [role="dialog"],
+.dark .modal {
+  background-color: #1e293b !important;
+  color: #FFFFFF !important;
+}
+
+.dark .modal-header {
+  border-color: #2d3748 !important;
+}
+
+.dark .modal-footer {
+  border-color: #2d3748 !important;
+}
+
+/* Sidebar - modo escuro */
+.dark .sidebar,
+.dark [class*="sidebar"] {
+  background-color: #1a1f2e !important;
+}
+
+.dark .sidebar-shadow {
+  box-shadow: 
+    4px 0 20px rgba(0, 0, 0, 0.4),
+    2px 0 8px rgba(0, 0, 0, 0.3),
+    inset -1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Botões da sidebar no modo escuro - sempre com visual de hover */
+.dark nav a:not([class*="bg-blue-2"]),
+.dark nav button:not([class*="bg-blue-2"]) {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  ring: 0 !important;
+  opacity: 0.8 !important;
+  transition: all 0.2s ease !important;
+}
+
+.dark nav a:not([class*="bg-blue-2"]):hover,
+.dark nav button:not([class*="bg-blue-2"]):hover {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  ring: 0 !important;
+  opacity: 1 !important;
+  transform: translateX(2px) !important;
+}
+
+/* Botões selecionados mantêm destaque */
+.dark nav a[class*="bg-blue-2"],
+.dark nav button[class*="bg-blue-2"] {
+  background-color: #293548 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
+  opacity: 1 !important;
+  transform: translateX(2px) !important;
+  color: #FFFFFF !important;
+}
+
+/* Garantir que texto dos botões selecionados seja branco */
+.dark nav a[class*="bg-blue-2"] span,
+.dark nav button[class*="bg-blue-2"] span,
+.dark nav a[class*="bg-blue-2"] *,
+.dark nav button[class*="bg-blue-2"] * {
+  color: #FFFFFF !important;
+}
+
+/* Tabs */
+.dark [role="tablist"] button {
+  color: #FFFFFF;
+}
+
+.dark [role="tablist"] button[data-state="active"] {
+  color: #FFFFFF;
+  border-color: #4A7EFF;
+}
+
+/* Scrollbar personalizada para modo escuro */
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4A7EFF;
+  border-radius: 4px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #3B6BFF;
+}
+
+/* Scrollbars globais no modo escuro */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #000000 !important;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4A7EFF !important;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3B6BFF !important;
+}
+
+.dark ::-webkit-scrollbar-corner {
+  background: #000000 !important;
+}
+
+/* Scrollbars para Firefox no modo escuro */
+.dark {
+  scrollbar-width: thin;
+  scrollbar-color: #4A7EFF #000000;
+}
+
+/* Scrollbars para elementos específicos */
+.dark .overflow-auto,
+.dark .overflow-y-auto,
+.dark .overflow-x-auto,
+.dark [style*="overflow"] {
+  scrollbar-width: thin;
+  scrollbar-color: #4A7EFF #000000;
+}
+
+/* Dividers */
+.dark hr,
+.dark .divider {
+  border-color: #2d3748 !important;
+}
+
+/* Formulários */
+.dark label {
+  color: #FFFFFF !important;
+}
+
+.dark .form-group {
+  color: #FFFFFF;
+}
+
+/* Popovers e tooltips */
+.dark [data-radix-popper-content-wrapper] {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+}
+
+/* Search */
+.dark .search-input {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+  color: #FFFFFF !important;
+}
+
+/* Campo de pesquisa da topbar no modo escuro - container completo com lupa */
+.dark form > div[class*="flex items-center"],
+.dark form div[class*="rounded-lg"] {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+}
+
+.dark form > div[class*="flex items-center"]:focus-within,
+.dark form div[class*="rounded-lg"]:focus-within {
+  background-color: #1e293b !important;
+  border-color: #4A7EFF !important;
+  box-shadow: 0 0 0 1px #4A7EFF !important;
+}
+
+.dark .topbar-search input,
+.dark [class*="search"] input,
+.dark input[type="search"],
+.dark input[placeholder*="Pesquisar"],
+.dark input[placeholder*="pesquisar"],
+.dark input[placeholder*="Buscar"] {
+  background-color: transparent !important;
+  color: #FFFFFF !important;
+}
+
+/* Garantir que o ícone de lupa não tenha fundo preto */
+.dark form div[class*="pl-3"] {
+  background-color: transparent !important;
+}
+
+/* Badges genéricos */
+.dark .badge {
+  background-color: #293548 !important;
+  color: #FFFFFF !important;
+}
+
+/* Avatars */
+.dark .avatar {
+  border-color: #2d3748 !important;
+}
+
+/* Links */
+.dark a:not([class*="bg-"]) {
+  color: #60a5fa;
+}
+
+.dark a:not([class*="bg-"]):hover {
+  color: #93c5fd;
+}
+
+/* Select dropdowns */
+.dark [role="listbox"],
+.dark [role="menu"] {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+}
+
+.dark [role="option"],
+.dark [role="menuitem"] {
+  color: #FFFFFF !important;
+}
+
+.dark [role="option"]:hover,
+.dark [role="menuitem"]:hover {
+  background-color: #293548 !important;
+}
+
+/* Calendário */
+.dark .calendar {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+}
+
+.dark .calendar-day {
+  color: #FFFFFF;
+}
+
+.dark .calendar-day:hover {
+  background-color: #293548 !important;
+}
+
+/* File upload */
+.dark .file-upload-area {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+  color: #FFFFFF !important;
+}
+
+/* Stats cards */
+.dark .stat-card {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+}
+
+/* Notifications */
+.dark .notification {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+}
+
+/* Chat messages */
+.dark .chat-message {
+  background-color: #1e293b !important;
+  color: #FFFFFF !important;
+}
+
+.dark .chat-message.sent {
+  background-color: #1e3a8a !important;
+}
+
+/* Email interface */
+.dark .email-list-item {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+}
+
+.dark .email-list-item:hover {
+  background-color: #293548 !important;
+}
+
+/* Breadcrumb */
+.dark .breadcrumb {
+  color: #FFFFFF;
+}
+
+.dark .breadcrumb a {
+  color: #60a5fa;
+}
+
+/* Code blocks */
+.dark code,
+.dark pre {
+  background-color: #0f172a !important;
+  color: #FFFFFF !important;
+}
+
+/* Progress bars */
+.dark .progress-bar {
+  background-color: #293548 !important;
+}
+
+.dark .progress-fill {
+  background-color: #4A7EFF !important;
+}
+
+/* Accordions */
+.dark [data-radix-accordion-item] {
+  border-color: #2d3748 !important;
+}
+
+.dark [data-radix-accordion-trigger] {
+  color: #FFFFFF !important;
+}
+
+.dark [data-radix-accordion-content] {
+  color: #FFFFFF !important;
+}
+
+/* Switches e toggles */
+.dark .switch {
+  background-color: #293548 !important;
+}
+
+.dark .switch[data-state="checked"] {
+  background-color: #4A7EFF !important;
+}
+
+/* Radio buttons e checkboxes */
+.dark input[type="radio"],
+.dark input[type="checkbox"] {
+  border-color: #2d3748 !important;
+  background-color: #1e293b !important;
+}
+
+.dark input[type="radio"]:checked,
+.dark input[type="checkbox"]:checked {
+  background-color: #4A7EFF !important;
+  border-color: #4A7EFF !important;
+}
+
+/* Context menu */
+.dark [data-radix-context-menu-content] {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+}
+
+/* Command palette */
+.dark [cmdk-root] {
+  background-color: #1e293b !important;
+  color: #FFFFFF !important;
+}
+
+.dark [cmdk-input] {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+/* Toast notifications */
+.dark [data-sonner-toast] {
+  background-color: #1e293b !important;
+  border-color: #2d3748 !important;
+  color: #FFFFFF !important;
+}
+
+/* Skeleton loaders */
+.dark .skeleton {
+  background-color: #1e293b !important;
+}
+
+/* Navigation buttons */
+.dark .navigation-button-inactive {
+  color: #FFFFFF !important;
+}
+
+.dark .navigation-button-inactive:hover {
+  color: #FFFFFF !important;
+  background-color: #293548 !important;
+}
+
+/* Assegurar legibilidade de todos os textos */
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: #FFFFFF !important;
+}
+
+.dark p {
+  color: #FFFFFF;
+}
+
+.dark span {
+  color: inherit;
+}
+
+/* Garantir contraste em elementos com fundo escuro */
+.dark .text-black {
+  color: #FFFFFF !important;
+}
+
+/* Sombras mais suaves no modo dark */
+.dark [class*="shadow"] {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}

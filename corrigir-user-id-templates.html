@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corrigir User ID Templates</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .alert {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .sql-code {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            margin: 20px 0;
+        }
+        .steps {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .copy-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 10px;
+            margin-right: 10px;
+        }
+        .copy-btn:hover {
+            background-color: #c82333;
+        }
+        .copy-btn.fix {
+            background-color: #28a745;
+        }
+        .copy-btn.fix:hover {
+            background-color: #1e7e34;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        .error-detail {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Corrigir User ID Templates</h1>
+        
+        <div class="alert">
+            <strong>❌ ERRO IDENTIFICADO:</strong> O problema é que o <code>user_id</code> está sendo inserido como <code>null</code> na tabela templates, violando a constraint NOT NULL.
+        </div>
+
+        <div class="error-detail">
+            <strong>Detalhes do Erro:</strong><br>
+            ERROR: 23502: null value in column "user_id" of relation "templates" violates not-null constraint<br>
+            <strong>Causa:</strong> O script está tentando inserir um template usando <code>auth.uid()</code> que retorna <code>null</code> quando não há usuário autenticado no contexto SQL.
+        </div>
+
+        <div class="info">
+            <strong>💡 SOLUÇÃO:</strong> Vamos corrigir os templates existentes com <code>user_id null</code> e criar templates de forma segura.
+        </div>
+
+        <div class="section">
+            <h2>🔍 Passo 1: Verificar e Corrigir Templates Existentes</h2>
+            <p>Este script irá verificar templates com user_id null e corrigi-los.</p>
+            
+            <button class="copy-btn fix" onclick="copyFixScript()">🔧 Copiar Script de Correção</button>
+            
+            <div class="sql-code" id="fixScript">-- Solução simples para o problema de user_id null na tabela templates
+-- Execute este script no SQL Editor do Supabase
+
+-- 1. Verificar templates existentes
+SELECT 
+    id,
+    nome,
+    user_id,
+    owner_id,
+    canal,
+    status,
+    created_at
+FROM public.templates
+ORDER BY created_at DESC;
+
+-- 2. Se não houver templates, vamos criar um manualmente
+-- Primeiro, vamos pegar o ID do primeiro usuário
+DO $$
+DECLARE
+    first_user_id UUID;
+BEGIN
+    -- Pegar o ID do primeiro usuário
+    SELECT id INTO first_user_id 
+    FROM auth.users 
+    ORDER BY created_at ASC 
+    LIMIT 1;
+    
+    -- Se não houver usuários, criar um template genérico
+    IF first_user_id IS NULL THEN
+        RAISE NOTICE 'Nenhum usuário encontrado. Pulando criação de template.';
+    ELSE
+        -- Criar template de teste se não existir
+        INSERT INTO public.templates (user_id, owner_id, nome, conteudo, canal, status)
+        SELECT 
+            first_user_id,
+            first_user_id,
+            'Template de Boas-vindas',
+            '<h1>Olá!</h1><p>Este é um template de exemplo.</p><p>Você pode personalizar este template conforme suas necessidades.</p>',
+            'email',
+            'ativo'
+        WHERE NOT EXISTS (
+            SELECT 1 FROM public.templates 
+            WHERE user_id = first_user_id 
+            AND canal = 'email' 
+            AND status = 'ativo'
+        );
+        
+        RAISE NOTICE 'Template criado para usuário: %', first_user_id;
+    END IF;
+END $$;
+
+-- 3. Verificar se o template foi criado
+SELECT 
+    id,
+    nome,
+    user_id,
+    owner_id,
+    canal,
+    status,
+    created_at
+FROM public.templates
+ORDER BY created_at DESC;
+
+-- 4. Verificar se há templates com user_id null e corrigir
+UPDATE public.templates 
+SET user_id = (
+    SELECT id FROM auth.users 
+    ORDER BY created_at ASC 
+    LIMIT 1
+),
+owner_id = (
+    SELECT id FROM auth.users 
+    ORDER BY created_at ASC 
+    LIMIT 1
+)
+WHERE user_id IS NULL;
+
+-- 5. Verificação final
+SELECT 
+    COUNT(*) as total_templates,
+    COUNT(CASE WHEN user_id IS NOT NULL THEN 1 END) as templates_com_user_id,
+    COUNT(CASE WHEN user_id IS NULL THEN 1 END) as templates_sem_user_id
+FROM public.templates;
+
+-- 6. Listar todos os templates finais
+SELECT 
+    id,
+    nome,
+    user_id,
+    canal,
+    status,
+    created_at
+FROM public.templates
+ORDER BY created_at DESC;</div>
+        </div>
+
+        <div class="steps">
+            <strong>📋 Passos para Resolver:</strong>
+            <ol>
+                <li>Execute o <strong>Script de Correção</strong> no Supabase SQL Editor</li>
+                <li>Verifique se não há erros na execução</li>
+                <li>Confirme que os templates foram criados/corrigidos</li>
+                <li>Volte ao sistema e teste o modal de agendamento</li>
+                <li>Os templates devem aparecer no dropdown</li>
+            </ol>
+        </div>
+
+        <div class="info">
+            <strong>🔍 O que este script faz:</strong>
+            <ul>
+                <li>Verifica templates existentes</li>
+                <li>Pega o ID do primeiro usuário disponível</li>
+                <li>Cria um template de boas-vindas se não existir</li>
+                <li>Corrige templates com user_id null</li>
+                <li>Mostra estatísticas finais</li>
+            </ul>
+        </div>
+
+        <div class="success" id="successMessage">
+            ✅ Script copiado com sucesso! Agora cole no Supabase SQL Editor.
+        </div>
+    </div>
+
+    <script>
+        function copyFixScript() {
+            const script = document.getElementById('fixScript').textContent;
+            navigator.clipboard.writeText(script).then(function() {
+                showSuccessMessage();
+            });
+        }
+
+        function showSuccessMessage() {
+            const successMsg = document.getElementById('successMessage');
+            successMsg.style.display = 'block';
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+
+
